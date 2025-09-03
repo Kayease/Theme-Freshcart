@@ -62,7 +62,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "analyze": "vite build --mode=production && npx rollup-plugin-visualizer --open dist/stats.html",
-    "test": "echo 'Tests placeholder - configure jest/vitest' && exit 0",
+    "test": "echo 'Tests placeholder - configure jest/vitest' && exit 0"
   },
   "eslintConfig": {
     "extends": [
