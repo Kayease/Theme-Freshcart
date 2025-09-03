@@ -11,7 +11,7 @@ export default defineConfig(async ({ command }) => {
   if (command === 'build' || process.env.ANALYZE) {
     try {
       const { visualizer } = await import('rollup-plugin-visualizer');
-      plugins.push(visualizer({ filename: 'build/stats.html', open: false }));
+      plugins.push(visualizer({ filename: 'dist/stats.html', open: false }));
     } catch (e) {
       // Silent fallback if not installed
       console.warn('[freshcart] rollup-plugin-visualizer not installed; skip bundle stats.');
@@ -20,7 +20,8 @@ export default defineConfig(async ({ command }) => {
 
   return {
     build: {
-      outDir: 'build',
+      // Output directory changed back to Vite default 'dist' to satisfy hosting platforms expecting that folder
+      outDir: 'dist',
       chunkSizeWarningLimit: 2000,
     },
     plugins,
