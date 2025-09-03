@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary Colors */
+    --color-primary: #2D7D32; /* green-800 */
+    --color-primary-foreground: #FFFFFF; /* white */
+    
+    /* Secondary Colors */
+    --color-secondary: #558B2F; /* light-green-700 */
+    --color-secondary-foreground: #FFFFFF; /* white */
+    
+    /* Accent Colors */
+    --color-accent: #FF8F00; /* orange-600 */
+    --color-accent-foreground: #FFFFFF; /* white */
+    
+    /* Background Colors */
+    --color-background: #FAFAFA; /* gray-50 */
+    --color-surface: #FFFFFF; /* white */
+    
+    /* Text Colors */
+    --color-text-primary: #212121; /* gray-800 */
+    --color-text-secondary: #757575; /* gray-500 */
+    
+    /* Status Colors */
+    --color-success: #4CAF50; /* green-500 */
+    --color-success-foreground: #FFFFFF; /* white */
+    --color-warning: #FF9800; /* orange-500 */
+    --color-warning-foreground: #FFFFFF; /* white */
+    --color-error: #F44336; /* red-500 */
+    --color-error-foreground: #FFFFFF; /* white */
+    
+    /* Border Colors */
+    --color-border: #E0E0E0; /* gray-300 */
+    --color-border-light: #F5F5F5; /* gray-100 */
+    
+    /* Shadow Colors */
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+    
+    /* Animation Timing */
+    --timing-fast: 150ms;
+    --timing-normal: 200ms;
+    --timing-slow: 300ms;
+    --timing-bezier: cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-text-primary font-body;
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .font-heading {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .font-body {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+  
+  .font-caption {
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  .font-data {
+    font-family: 'JetBrains Mono', monospace;
+  }
+  
+  .shadow-card {
+    box-shadow: var(--shadow-light);
+  }
+  
+  .shadow-modal {
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .transition-smooth {
+    transition: all var(--timing-normal) var(--timing-bezier);
+  }
+  
+  .transition-fast {
+    transition: all var(--timing-fast) var(--timing-bezier);
+  }
+  
+  .transition-slow {
+    transition: all var(--timing-slow) var(--timing-bezier);
+  }
+}

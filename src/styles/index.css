@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Inter;
+}
+
+* {
+  box-sizing: border-box;
+  line-height: normal;
+  font-family: inherit;
+  margin: unset;
+}
+
+/* Hide scrollbars globally */
+* {
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* IE and Edge */
+}
+*::-webkit-scrollbar {
+  display: none;                 /* Chrome, Safari, Opera */
+}
