@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
+import profileStorage from '../utils/profileStorage';
 
 const AuthContext = createContext(null);
 
@@ -26,12 +27,32 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const toast = useToast();
 
+  const refreshUserFromStorage = () => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const baseUser = JSON.parse(storedUser);
+        const storedProfile = profileStorage.getStoredProfile();
+        const merged = storedProfile ? { ...baseUser, ...storedProfile } : baseUser;
+        setUser(merged);
+        localStorage.setItem('user', JSON.stringify(merged));
+      }
+    } catch {}
+  };
+
   // Check if user is logged in on mount and load cart/wishlist data
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const baseUser = JSON.parse(storedUser);
+        // Merge with profile storage if present (avatar and details overrides)
+        const storedProfile = profileStorage.getStoredProfile();
+        const merged = storedProfile ? { ...baseUser, ...storedProfile } : baseUser;
+        setUser(merged);
+        if (storedProfile) {
+          localStorage.setItem('user', JSON.stringify(merged));
+        }
       } catch (error) {
         console.error('Failed to parse user from localStorage:', error);
       }
@@ -59,7 +80,15 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
+    const onProfileUpdated = () => refreshUserFromStorage();
+    window.addEventListener('profile:updated', onProfileUpdated);
+    window.addEventListener('storage', onProfileUpdated);
+
     setLoading(false);
+    return () => {
+      window.removeEventListener('profile:updated', onProfileUpdated);
+      window.removeEventListener('storage', onProfileUpdated);
+    };
   }, []);
   
   // Order history management
@@ -119,8 +148,11 @@ export const AuthProvider = ({ children }) => {
       if (registeredUser.email === email && registeredUser.password === password) {
         const sessionUser = { ...registeredUser };
         delete sessionUser.password;
-        setUser(sessionUser);
-        localStorage.setItem('user', JSON.stringify(sessionUser));
+        // Merge profile storage fields
+        const storedProfile = profileStorage.getStoredProfile();
+        const merged = storedProfile ? { ...sessionUser, ...storedProfile } : sessionUser;
+        setUser(merged);
+        localStorage.setItem('user', JSON.stringify(merged));
         toast.success('Login successful! Welcome back.');
         navigate('/home-dashboard-1');
         return { success: true };
@@ -149,12 +181,47 @@ export const AuthProvider = ({ children }) => {
       // Auto-login after first registration
       const sessionUser = { ...newUser };
       delete sessionUser.password;
-      setUser(sessionUser);
-      localStorage.setItem('user', JSON.stringify(sessionUser));
+      const storedProfile = profileStorage.getStoredProfile();
+      const merged = storedProfile ? { ...sessionUser, ...storedProfile } : sessionUser;
+      setUser(merged);
+      localStorage.setItem('user', JSON.stringify(merged));
       toast.success('Registration successful! Welcome to FreshCart.');
       navigate('/home-dashboard-1');
       return { success: true };
     } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      const registeredUserRaw = localStorage.getItem('registeredUser');
+      if (!registeredUserRaw) {
+        toast.error('No registered account found.');
+        return { success: false, error: 'No registered user' };
+      }
+      const registeredUser = JSON.parse(registeredUserRaw);
+      if (registeredUser.password !== currentPassword) {
+        toast.error('Current password is incorrect');
+        return { success: false, error: 'Incorrect current password' };
+      }
+
+      const updatedRegistered = { ...registeredUser, password: newPassword };
+      localStorage.setItem('registeredUser', JSON.stringify(updatedRegistered));
+
+      // Do not store password in session user
+      const storedUserRaw = localStorage.getItem('user');
+      if (storedUserRaw) {
+        try {
+          const sessionUser = JSON.parse(storedUserRaw);
+          localStorage.setItem('user', JSON.stringify(sessionUser));
+        } catch {}
+      }
+
+      toast.success('Password updated successfully');
+      return { success: true };
+    } catch (error) {
+      toast.error('Failed to update password');
       return { success: false, error: error.message };
     }
   };
@@ -352,6 +419,7 @@ export const AuthProvider = ({ children }) => {
     addPaymentMethod,
     updatePaymentMethod,
     deletePaymentMethod,
+    changePassword,
     // Cart state and functions
     cart,
     cartItemCount,

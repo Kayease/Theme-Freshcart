@@ -3,17 +3,21 @@ import { useSearchParams } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import Icon from '../../components/AppIcon';
+import profileStorage from '../../utils/profileStorage';
+import { useAuth } from '../../contexts/AuthContext';
+import ToastContainer from '../../components/ui/ToastContainer';
 import PersonalInfoSection from './components/PersonalInfoSection';
 import DeliveryAddressSection from './components/DeliveryAddressSection';
 import PaymentMethodsSection from './components/PaymentMethodsSection';
-import NotificationPreferencesSection from './components/NotificationPreferencesSection';
 import AccountSecuritySection from './components/AccountSecuritySection';
 
 const UserProfileAccountSettings = () => {
   const [searchParams] = useSearchParams();
   const initialSection = searchParams.get('section') || 'personal';
   const [activeSection, setActiveSection] = useState(initialSection);
-  const [profileCompletion] = useState(85);
+  const [profileCompletion, setProfileCompletion] = useState(0);
+  const { toast } = useAuth();
+  const { toasts, removeToast } = toast;
 
   useEffect(() => {
     const section = searchParams.get('section');
@@ -26,17 +30,47 @@ const UserProfileAccountSettings = () => {
     { key: 'personal', label: 'Personal Information', icon: 'User' },
     { key: 'addresses', label: 'Delivery Addresses', icon: 'MapPin' },
     { key: 'payment', label: 'Payment Methods', icon: 'CreditCard' },
-    { key: 'notifications', label: 'Notifications', icon: 'Bell' },
-    { key: 'security', label: 'Account Security', icon: 'Shield' },
-    { key: 'preferences', label: 'Preferences', icon: 'Settings' }
+    { key: 'security', label: 'Account Security', icon: 'Shield' }
   ];
 
-  const userInfo = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    profileImage: null,
-    memberSince: '2023'
-  };
+  // In the theme, pull user info from local session storage if available
+  const [userInfo, setUserInfo] = useState({ name: 'Guest User', email: '', profileImage: null, firstName: '', lastName: '', phone: '', dateOfBirth: '' });
+  useEffect(() => {
+    const load = () => {
+      try {
+        const base = (() => {
+          const raw = localStorage.getItem('user');
+          return raw ? JSON.parse(raw) : {};
+        })();
+        const stored = profileStorage.getStoredProfile() || {};
+        const merged = { ...base, ...stored };
+        const names = (merged.name || '').trim().split(' ');
+        const first = merged.firstName || names[0] || '';
+        const last = merged.lastName || names.slice(1).join(' ') || '';
+        const next = {
+          name: merged.name || [first, last].filter(Boolean).join(' ') || 'Guest User',
+          email: merged.email || '',
+          profileImage: merged.profileImage || null,
+          firstName: first,
+          lastName: last,
+          phone: merged.phone || '',
+          dateOfBirth: merged.dateOfBirth || ''
+        };
+        setUserInfo(next);
+        // compute completion: 5 inputs
+        const filled = [next.firstName, next.lastName, next.email, next.phone, next.dateOfBirth].filter(v => v && String(v).trim().length > 0).length;
+        setProfileCompletion(Math.round((filled / 5) * 100));
+      } catch { }
+    };
+    load();
+    const onChange = () => load();
+    window.addEventListener('storage', onChange);
+    window.addEventListener('profile:updated', onChange);
+    return () => {
+      window.removeEventListener('storage', onChange);
+      window.removeEventListener('profile:updated', onChange);
+    };
+  }, []);
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -46,67 +80,21 @@ const UserProfileAccountSettings = () => {
         return <DeliveryAddressSection />;
       case 'payment':
         return <PaymentMethodsSection />;
-      case 'notifications':
-        return <NotificationPreferencesSection />;
       case 'security':
         return <AccountSecuritySection />;
-      case 'preferences':
-        return <PreferencesSection />;
       default:
         return <PersonalInfoSection />;
     }
   };
 
-  const PreferencesSection = () => (
-    <div className="space-y-6">
-      <div className="bg-surface border border-border rounded-card p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <Icon name="Settings" size={20} className="text-primary" />
-          <h2 className="text-lg font-heading font-semibold text-text-primary">
-            Shopping Preferences
-          </h2>
-        </div>
-        <div className="space-y-4">
-          <div className="border border-border rounded-card p-4">
-            <h3 className="text-base font-heading font-semibold text-text-primary mb-2">
-              Dietary Preferences
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {['Vegetarian', 'Vegan', 'Gluten-Free', 'Organic', 'Halal', 'Kosher'].map((diet) => (
-                <button
-                  key={diet}
-                  className="px-3 py-1 text-sm border border-border rounded-full hover:border-primary hover:text-primary transition-colors"
-                >
-                  {diet}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="border border-border rounded-card p-4">
-            <h3 className="text-base font-heading font-semibold text-text-primary mb-2">
-              Favorite Stores
-            </h3>
-            <div className="space-y-2">
-              {['Whole Foods Market', 'Trader Joe\'s', 'Safeway'].map((store) => (
-                <div key={store} className="flex items-center justify-between p-2 hover:bg-border/30 rounded">
-                  <span className="text-sm text-text-primary">{store}</span>
-                  <Icon name="Heart" size={16} className="text-primary" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Breadcrumb />
-        
+
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           {/* Sidebar - Desktop */}
           <div className="hidden lg:block lg:col-span-3">
@@ -114,8 +102,12 @@ const UserProfileAccountSettings = () => {
               {/* Profile Card */}
               <div className="bg-surface border border-border rounded-card p-6">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon name="User" size={24} className="text-primary-foreground" />
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden border border-border bg-border/40">
+                    {userInfo.profileImage ? (
+                      <img src={userInfo.profileImage} alt={userInfo.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Icon name="User" size={24} className="text-text-secondary" />
+                    )}
                   </div>
                   <h2 className="text-lg font-heading font-semibold text-text-primary">
                     {userInfo.name}
@@ -129,15 +121,12 @@ const UserProfileAccountSettings = () => {
                       <span>{profileCompletion}%</span>
                     </div>
                     <div className="w-full bg-border rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full" 
+                      <div
+                        className="bg-primary h-2 rounded-full"
                         style={{ width: `${profileCompletion}%` }}
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-text-secondary">
-                    Member since {userInfo.memberSince}
-                  </p>
                 </div>
               </div>
 
@@ -148,11 +137,10 @@ const UserProfileAccountSettings = () => {
                     <li key={item.key}>
                       <button
                         onClick={() => setActiveSection(item.key)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-button text-sm font-body transition-colors ${
-                          activeSection === item.key
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-text-primary hover:bg-border/50 hover:text-primary'
-                        }`}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-button text-sm font-body transition-colors ${activeSection === item.key
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-text-primary hover:bg-border/50 hover:text-primary'
+                          }`}
                       >
                         <Icon name={item.icon} size={16} />
                         <span>{item.label}</span>
@@ -185,11 +173,10 @@ const UserProfileAccountSettings = () => {
                   <button
                     key={item.key}
                     onClick={() => setActiveSection(item.key)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-button text-sm font-body transition-colors ${
-                      activeSection === item.key
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-text-primary hover:bg-border/50 hover:text-primary'
-                    }`}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-button text-sm font-body transition-colors ${activeSection === item.key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-text-primary hover:bg-border/50 hover:text-primary'
+                      }`}
                   >
                     <Icon name={item.icon} size={16} />
                     <span className="truncate">{item.label}</span>
@@ -205,6 +192,7 @@ const UserProfileAccountSettings = () => {
           </div>
         </div>
       </main>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };

@@ -98,7 +98,7 @@ const SignUp = () => {
       const result = await register(fullName.trim(), formData.email.trim(), formData.password);
       if (result.success) {
         setSuccessMessage('Account created successfully! Redirecting...');
-        toast.success('Registration successful');
+        // toast.success('Registration successful');
         setTimeout(() => navigate('/home-dashboard-1'), 1000);
       } else {
         setErrors({ form: 'Failed to create account. Please try again.' });
