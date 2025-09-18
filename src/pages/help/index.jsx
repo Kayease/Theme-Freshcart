@@ -5,12 +5,24 @@ import Footer from '../../components/ui/Footer';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import Icon from '../../components/AppIcon';
 import SEO from '../../components/SEO';
+import emailhook from '../../hooks/emailhook';
+import { useAuth } from '../../contexts/AuthContext';
+import ToastContainer from '../../components/ui/ToastContainer';
 
 const HelpPage = () => {
   const [searchParams] = useSearchParams();
   const initialSection = searchParams.get('section') || 'faq';
   const [activeSection, setActiveSection] = useState(initialSection);
   const [searchQuery, setSearchQuery] = useState('');
+  // Contact form state
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useAuth();
+  const { toasts, removeToast } = toast;
 
   useEffect(() => {
     const section = searchParams.get('section');
@@ -143,10 +155,71 @@ const HelpPage = () => {
     }
   ];
 
+  // Validation helpers (mirror SignIn/SignUp behavior)
+  const isValidEmail = (value) => emailhook.validateEmailStrict(value);
+  // 1 to 4 words, letters only per word, single spaces between
+  const nameRegex = /^([A-Za-zÀ-ÖØ-öø-ÿ]+(?: [A-Za-zÀ-ÖØ-öø-ÿ]+){0,3})$/;
+  // Reasonable subject: 3-120 allowed chars, not only spaces
+  const subjectRegex = /^[A-Za-z0-9À-ÖØ-öø-ÿ'&()\-.,!? ]{3,120}$/;
+  const lettersCount = message.replace(/\s/g, '').length; // exclude spaces
+
+  const validateContactForm = () => {
+    const newErrors = {};
+    const trimmedName = name.trim().replace(/\s+/g, ' ');
+    const trimmedEmail = email.trim();
+    const trimmedSubject = subject.trim();
+    const currentLetters = lettersCount;
+
+    if (!trimmedName || !nameRegex.test(trimmedName)) {
+      newErrors.name = 'Enter full name (1-4 words, letters only).';
+    }
+
+    if (!trimmedEmail) {
+      newErrors.email = 'Email is required';
+    } else if (!isValidEmail(trimmedEmail)) {
+      newErrors.email = 'Use a valid non-temporary email address';
+    }
+
+    if (!trimmedSubject) {
+      newErrors.subject = 'Subject is required';
+    } else if (!subjectRegex.test(trimmedSubject)) {
+      newErrors.subject = '3-120 chars. Letters, numbers and basic punctuation only';
+    }
+
+    if (currentLetters === 0) {
+      newErrors.message = 'Message is required';
+    } else if (currentLetters > 200) {
+      newErrors.message = 'Max 200 letters (excluding spaces)';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const resetForm = () => {
+    setName('');
+    setEmail('');
+    setSubject('');
+    setMessage('');
+    setErrors({});
+  };
+
+  const handleSendMessage = async () => {
+    if (isSubmitting) return;
+    if (!validateContactForm()) return;
+    setIsSubmitting(true);
+    // Simulate processing
+    setTimeout(() => {
+      try { toast.success('Thank you! Your message has been sent.'); } catch { }
+      resetForm();
+      setIsSubmitting(false);
+    }, 1500);
+  };
+
   const getFilteredItems = () => {
     let items = [];
-    
-    switch(activeSection) {
+
+    switch (activeSection) {
       case 'faq':
         items = faqItems;
         break;
@@ -162,14 +235,14 @@ const HelpPage = () => {
       default:
         items = faqItems;
     }
-    
+
     if (searchQuery) {
-      return items.filter(item => 
+      return items.filter(item =>
         item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.answer.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
+
     return items;
   };
 
@@ -179,10 +252,10 @@ const HelpPage = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <SEO title="Help Center | FreshCart" description="Find answers about orders, account, payments, and more." />
       <Header />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
         <Breadcrumb />
-        
+
         <div className="mb-8">
           <h1 className="text-3xl font-heading font-heading-bold text-text-primary mb-4">
             Help Center
@@ -211,16 +284,16 @@ const HelpPage = () => {
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeSection === section.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-text-primary hover:bg-border/50'
-                  }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeSection === section.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-text-primary hover:bg-border/50'
+                    }`}
                 >
                   <Icon name={section.icon} size={20} />
                   <span className="font-body">{section.label}</span>
                 </button>
               ))}
+
             </nav>
           </div>
 
@@ -261,9 +334,110 @@ const HelpPage = () => {
 
             {activeSection === 'contact' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-heading font-heading-bold text-text-primary mb-6">
+                <h2 className="text-2xl font-heading font-heading-bold text-text-primary ">
                   Contact Support
                 </h2>
+
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h3 className="text-lg font-heading font-heading-medium text-text-primary mb-4">
+                    Send us a message
+                  </h3>
+                  <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}>
+                    <div>
+                      <label className="block text-sm font-body-medium text-text-primary mb-1">
+                        Your Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="John Doe"
+                        maxLength={20}
+                        value={name}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ ]/g, '').replace(/\s+/g, ' ');
+                          
+                          setName(v);
+                          if (errors.name) setErrors(prev => ({ ...prev, name: '' }));
+                        }}
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.name ? 'border-red-500' : 'border-border focus:border-primary'}`}
+                      />
+                      {errors.name && (
+                        <p className="mt-1 text-xs text-red-600">{errors.name}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-body-medium text-text-primary mb-1">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="john.doe@example.com"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value.replace(/\s+/g, ''));
+                          if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                        }}
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.email ? 'border-red-500' : 'border-border focus:border-primary'}`}
+                      />
+                      {errors.email && (
+                        <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-body-medium text-text-primary mb-1">
+                        Subject
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Order issue"
+                        value={subject}
+                        maxLength={120}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\s+/g, ' ').replace(/^\s+/, '');
+                          setSubject(v);
+                          if (errors.subject) setErrors(prev => ({ ...prev, subject: '' }));
+                        }}
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.subject ? 'border-red-500' : 'border-border focus:border-primary'}`}
+                      />
+                      {errors.subject && (
+                        <p className="mt-1 text-xs text-red-600">{errors.subject}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-body-medium text-text-primary mb-1">
+                        Message
+                      </label>
+                      <textarea
+                        rows={4}
+                        placeholder="I need help with my order..."
+                        value={message}
+                        onChange={(e) => {
+                          setMessage(e.target.value);
+                          if (errors.message) setErrors(prev => ({ ...prev, message: '' }));
+                        }}
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.message ? 'border-red-500' : 'border-border focus:border-primary'}`}
+                      ></textarea>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className={`text-xs ${lettersCount > 200 ? 'text-red-600' : 'text-text-secondary'}`}>Letters used (excluding spaces): {Math.min(lettersCount, 999)}/200</p>
+                        {errors.message && (
+                          <p className="text-xs text-red-600">{errors.message}</p>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || lettersCount > 200}
+                      className={`px-6 py-2 rounded-button font-body-medium transition-colors w-full ${isSubmitting || lettersCount > 200 ? 'bg-primary/60 text-primary-foreground cursor-not-allowed' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center justify-center">
+                          <Icon name="Loader" size={16} className="animate-spin mr-2" />
+                          Sending...
+                        </span>
+                      ) : 'Send Message'}
+                    </button>
+                  </form>
+                </div>
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {contactMethods.map((method, index) => (
                     <button
@@ -282,56 +456,6 @@ const HelpPage = () => {
                     </button>
                   ))}
                 </div>
-                
-                <div className="mt-8 bg-surface border border-border rounded-lg p-6">
-                  <h3 className="text-lg font-heading font-heading-medium text-text-primary mb-4">
-                    Send us a message
-                  </h3>
-                  <form className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-body-medium text-text-primary mb-1">
-                        Your Name
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-body-medium text-text-primary mb-1">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-body-medium text-text-primary mb-1">
-                        Subject
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-body-medium text-text-primary mb-1">
-                        Message
-                      </label>
-                      <textarea
-                        rows={4}
-                        className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      ></textarea>
-                    </div>
-                    <button
-                      type="button"
-                      className="px-6 py-2 bg-primary text-primary-foreground rounded-button font-body-medium transition-colors hover:bg-primary/90"
-                    >
-                      Send Message
-                    </button>
-                  </form>
-                </div>
               </div>
             )}
           </div>
@@ -339,6 +463,7 @@ const HelpPage = () => {
       </main>
 
       <Footer />
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };

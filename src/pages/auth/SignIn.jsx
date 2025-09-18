@@ -103,7 +103,7 @@ const SignIn = () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       const result = await login(email, password);
       if (result.success) {
-        toast.success('Logged in successfully');
+        // toast.success('Logged in successfully');
         if (rememberMe) setRememberedEmail(email); else setRememberedEmail('');
         navigate(from, { replace: true });
       } else {
