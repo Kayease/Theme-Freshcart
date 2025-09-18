@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Icon from '../../../components/AppIcon';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
   const [showAddCard, setShowAddCard] = useState(false);
@@ -12,49 +13,9 @@ const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
     cardholderName: '',
     saveCard: false
   });
+  const { user, addPaymentMethod, deletePaymentMethod } = useAuth();
 
-  const paymentMethods = [
-    {
-      id: 'card-1',
-      type: 'card',
-      name: 'Credit Card',
-      details: '**** **** **** 4532',
-      brand: 'visa',
-      isDefault: true
-    },
-    {
-      id: 'card-2',
-      type: 'card',
-      name: 'Debit Card',
-      details: '**** **** **** 8901',
-      brand: 'mastercard',
-      isDefault: false
-    },
-    {
-      id: 'paypal',
-      type: 'digital',
-      name: 'PayPal',
-      details: 'john.smith@email.com',
-      brand: 'paypal',
-      isDefault: false
-    },
-    {
-      id: 'apple-pay',
-      type: 'digital',
-      name: 'Apple Pay',
-      details: 'Touch ID or Face ID',
-      brand: 'apple',
-      isDefault: false
-    },
-    {
-      id: 'cod',
-      type: 'cash',
-      name: 'Cash on Delivery',
-      details: 'Pay when you receive',
-      brand: 'cash',
-      isDefault: false
-    }
-  ];
+  const paymentMethods = user?.paymentMethods || [];
 
   const handleInputChange = (field, value) => {
     setNewCard(prev => ({
@@ -66,13 +27,13 @@ const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
   const handleAddCard = () => {
     if (newCard.cardNumber && newCard.expiryDate && newCard.cvv && newCard.cardholderName) {
       const cardToAdd = {
-        id: `card-${Date.now()}`,
         type: 'card',
         name: 'Credit Card',
         details: `**** **** **** ${newCard.cardNumber.slice(-4)}`,
         brand: 'visa',
-        isDefault: false
+        isDefault: paymentMethods.length === 0
       };
+      addPaymentMethod(cardToAdd);
       
       setShowAddCard(false);
       setNewCard({
@@ -83,6 +44,13 @@ const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
         saveCard: false
       });
     }
+  };
+
+  const handleRemoveMethod = (id) => {
+    if (selectedPayment?.id === id) {
+      onPaymentSelect(null);
+    }
+    deletePaymentMethod(id);
   };
 
   const getPaymentIcon = (brand) => {
@@ -169,14 +137,21 @@ const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
                   </p>
                 </div>
               </div>
-              
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                selectedPayment?.id === method.id
-                  ? 'border-primary bg-primary' :'border-border'
-              }`}>
-                {selectedPayment?.id === method.id && (
-                  <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
-                )}
+              <div className="flex items-center gap-2">
+                <button
+                  className="text-xs text-text-secondary hover:text-destructive"
+                  onClick={(e) => { e.stopPropagation(); handleRemoveMethod(method.id); }}
+                >
+                  Remove
+                </button>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  selectedPayment?.id === method.id
+                    ? 'border-primary bg-primary' :'border-border'
+                }`}>
+                  {selectedPayment?.id === method.id && (
+                    <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

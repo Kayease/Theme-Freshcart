@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
+import SEO from '../../components/SEO';
 import Icon from '../../components/AppIcon';
 import ProductImageGallery from './components/ProductImageGallery';
 import ProductInfo from './components/ProductInfo';
@@ -178,6 +179,7 @@ const ProductDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title={`${mockProduct.name} | FreshCart`} description={`Details, reviews and offers for ${mockProduct.name}.`} />
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

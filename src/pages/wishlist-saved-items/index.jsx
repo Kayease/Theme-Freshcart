@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
 import Breadcrumb from '../../components/ui/Breadcrumb';
+import SEO from '../../components/SEO';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import WishlistGrid from './components/WishlistGrid';
@@ -10,93 +11,16 @@ import WishlistManagement from './components/WishlistManagement';
 import EmptyWishlist from './components/EmptyWishlist';
 import BulkActions from './components/BulkActions';
 import RecentlyViewed from './components/RecentlyViewed';
+import { useAuth } from '../../contexts/AuthContext';
 
 const WishlistSavedItems = () => {
   const navigate = useNavigate();
+  const { wishlist, addToCart, removeFromWishlist, moveToCart } = useAuth();
   
-  // State management
-  const [wishlistItems, setWishlistItems] = useState([
-    {
-      id: 1,
-      name: "Fresh Organic Bananas (2 lbs)",
-      brand: "FreshFarms",
-      price: 3.99,
-      originalPrice: 4.99,
-      discount: 20,
-      savedPrice: 3.49,
-      image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=200&h=200&fit=crop",
-      inStock: true,
-      rating: 4.5,
-      reviewCount: 234,
-      unit: "per 2 lbs",
-      savedDate: "2025-01-05",
-      priceChanged: true,
-      priceDropped: true,
-      category: "Fruits",
-      wishlistId: 1
-    },
-    {
-      id: 2,
-      name: "Whole Wheat Bread Loaf",
-      brand: "Baker\'s Choice",
-      price: 2.49,
-      originalPrice: 2.49,
-      discount: 0,
-      savedPrice: 2.49,
-      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=200&fit=crop",
-      inStock: true,
-      rating: 4.2,
-      reviewCount: 89,
-      unit: "per loaf",
-      savedDate: "2025-01-03",
-      priceChanged: false,
-      priceDropped: false,
-      category: "Bakery",
-      wishlistId: 1
-    },
-    {
-      id: 3,
-      name: "Organic Free-Range Eggs (12 pack)",
-      brand: "Farm Fresh",
-      price: 6.99,
-      originalPrice: 7.99,
-      discount: 13,
-      savedPrice: 7.49,
-      image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=200&h=200&fit=crop",
-      inStock: false,
-      rating: 4.8,
-      reviewCount: 156,
-      unit: "per dozen",
-      savedDate: "2025-01-02",
-      priceChanged: true,
-      priceDropped: true,
-      category: "Dairy",
-      wishlistId: 2
-    },
-    {
-      id: 4,
-      name: "Premium Olive Oil",
-      brand: "Mediterranean Gold",
-      price: 12.99,
-      originalPrice: 14.99,
-      discount: 13,
-      savedPrice: 12.99,
-      image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=200&h=200&fit=crop",
-      inStock: true,
-      rating: 4.6,
-      reviewCount: 78,
-      unit: "per bottle",
-      savedDate: "2025-01-01",
-      priceChanged: false,
-      priceDropped: false,
-      category: "Pantry",
-      wishlistId: 2
-    }
-  ]);
 
   const [wishlists, setWishlists] = useState([
-    { id: 1, name: "Weekly Essentials", itemCount: 2, isPrivate: false },
-    { id: 2, name: "Special Occasions", itemCount: 2, isPrivate: true },
+    { id: 1, name: "Weekly Essentials", itemCount: wishlist.length, isPrivate: false },
+    { id: 2, name: "Special Occasions", itemCount: 0, isPrivate: true },
     { id: 3, name: "Gift Ideas", itemCount: 0, isPrivate: false }
   ]);
 
@@ -107,37 +31,29 @@ const WishlistSavedItems = () => {
   const [priceDropNotifications, setPriceDropNotifications] = useState(true);
 
   // Filter items by selected wishlist
-  const filteredItems = wishlistItems.filter(item => item.wishlistId === selectedWishlist);
+  const filteredItems = wishlist.filter(item => item.wishlistId === selectedWishlist || !item.wishlistId);
 
   // Handle item operations
   const handleAddToCart = (itemId) => {
-    const item = wishlistItems.find(i => i.id === itemId);
+    const item = wishlist.find(i => i.id === itemId);
     if (item && item.inStock) {
-      console.log('Adding to cart:', item.name);
-      // Navigate to cart or show success message
+      moveToCart(itemId);
     }
   };
 
   const handleRemoveFromWishlist = (itemId) => {
-    setWishlistItems(prev => prev.filter(item => item.id !== itemId));
+    removeFromWishlist(itemId);
     setSelectedItems(prev => prev.filter(id => id !== itemId));
-    
-    // Update wishlist count
-    const item = wishlistItems.find(i => i.id === itemId);
-    if (item) {
-      setWishlists(prev => prev.map(w => 
-        w.id === item.wishlistId ? { ...w, itemCount: w.itemCount - 1 } : w
-      ));
-    }
   };
 
   const handleMoveToWishlist = (itemId, targetWishlistId) => {
-    setWishlistItems(prev => prev.map(item => 
+    // Update wishlist items
+    const updatedWishlist = wishlist.map(item => 
       item.id === itemId ? { ...item, wishlistId: targetWishlistId } : item
-    ));
+    );
     
     // Update wishlist counts
-    const item = wishlistItems.find(i => i.id === itemId);
+    const item = wishlist.find(i => i.id === itemId);
     if (item) {
       setWishlists(prev => prev.map(w => {
         if (w.id === item.wishlistId) return { ...w, itemCount: w.itemCount - 1 };
@@ -162,29 +78,54 @@ const WishlistSavedItems = () => {
     );
   };
 
+  // Update wishlists when wishlist changes
+  useEffect(() => {
+    setWishlists(prev => prev.map(w => 
+      w.id === selectedWishlist ? { ...w, itemCount: filteredItems.length } : w
+    ));
+  }, [wishlist, selectedWishlist, filteredItems.length]);
+
   const handleBulkAddToCart = () => {
-    const availableItems = selectedItems.filter(id => {
-      const item = wishlistItems.find(i => i.id === id);
-      return item && item.inStock;
+    selectedItems.forEach(itemId => {
+      const item = wishlist.find(i => i.id === itemId);
+      if (item && item.inStock) {
+        moveToCart(itemId);
+      }
     });
-    
-    if (availableItems.length > 0) {
-      console.log('Adding multiple items to cart:', availableItems);
-      setSelectedItems([]);
-    }
+    setSelectedItems([]);
   };
 
   const handleBulkRemove = () => {
-    setWishlistItems(prev => prev.filter(item => !selectedItems.includes(item.id)));
+    selectedItems.forEach(itemId => {
+      removeFromWishlist(itemId);
+    });
     setSelectedItems([]);
   };
 
   const handleBulkMoveToWishlist = (targetWishlistId) => {
-    setWishlistItems(prev => prev.map(item => 
+    // Update items in the wishlist context
+    const updatedWishlist = wishlist.map(item => 
       selectedItems.includes(item.id) 
         ? { ...item, wishlistId: targetWishlistId }
         : item
-    ));
+    );
+    
+    // Update wishlist counts
+    setWishlists(prev => prev.map(w => {
+      const itemsMovingFrom = selectedItems.filter(id => {
+        const item = wishlist.find(i => i.id === id);
+        return item && item.wishlistId === w.id;
+      }).length;
+      
+      const isTarget = w.id === targetWishlistId;
+      const itemsMovingTo = isTarget ? selectedItems.length : 0;
+      
+      return {
+        ...w,
+        itemCount: w.itemCount - itemsMovingFrom + (isTarget ? itemsMovingTo : 0)
+      };
+    }));
+    
     setSelectedItems([]);
   };
 
@@ -210,7 +151,6 @@ const WishlistSavedItems = () => {
   const handleDeleteWishlist = (wishlistId) => {
     if (wishlists.length > 1) {
       setWishlists(prev => prev.filter(w => w.id !== wishlistId));
-      setWishlistItems(prev => prev.filter(item => item.wishlistId !== wishlistId));
       
       if (selectedWishlist === wishlistId) {
         setSelectedWishlist(wishlists.find(w => w.id !== wishlistId)?.id || 1);
@@ -266,6 +206,7 @@ const WishlistSavedItems = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SEO title="Wishlist | FreshCart" description="View and manage your saved items and wishlists." />
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">

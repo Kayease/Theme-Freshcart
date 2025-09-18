@@ -1,45 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Image from '../../../components/AppImage';
+import Icon from '../../../components/AppIcon';
+import productsData from '../../../data/products.json';
 
 const FeaturedBrands = () => {
-  const brands = [
-    {
-      id: 1,
-      name: "Organic Valley",
-      logo: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=120&h=80&fit=crop",
-      description: "Premium organic dairy products"
-    },
-    {
-      id: 2,
-      name: "Fresh Farms",
-      logo: "https://images.pexels.com/photos/1300972/pexels-photo-1300972.jpeg?w=120&h=80&fit=crop",
-      description: "Farm-fresh produce daily"
-    },
-    {
-      id: 3,
-      name: "Ocean\'s Best",
-      logo: "https://images.pixabay.com/photo/2016/11/30/15/00/fishing-boat-1873078_1280.jpg?w=120&h=80&fit=crop",
-      description: "Premium seafood selection"
-    },
-    {
-      id: 4,
-      name: "Baker\'s Choice",
-      logo: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=120&h=80&fit=crop",
-      description: "Artisan breads & pastries"
-    },
-    {
-      id: 5,
-      name: "Green Garden",
-      logo: "https://images.pexels.com/photos/1400172/pexels-photo-1400172.jpeg?w=120&h=80&fit=crop",
-      description: "Organic vegetables & herbs"
-    },
-    {
-      id: 6,
-      name: "Pure Pantry",
-      logo: "https://images.pixabay.com/photo/2017/06/06/22/37/italian-cuisine-2378729_1280.jpg?w=120&h=80&fit=crop",
-      description: "Premium pantry essentials"
-    }
-  ];
+  const [brands, setBrands] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Filter featured brands from our dataset
+    const featuredBrands = productsData.brands.filter(brand => brand.featured);
+    setBrands(featuredBrands);
+  }, []);
+
+  const handleBrandClick = (brandName) => {
+    navigate(`/search-results?brand=${encodeURIComponent(brandName)}`);
+  };
 
   return (
     <div className="bg-surface py-8">
@@ -57,14 +34,21 @@ const FeaturedBrands = () => {
           <div
             key={brand.id}
             className="bg-surface border border-border rounded-lg p-4 hover:shadow-card hover:border-primary transition-all duration-200 cursor-pointer group"
+            onClick={() => handleBrandClick(brand.name)}
           >
             <div className="text-center">
-              <div className="w-full h-16 mb-3 overflow-hidden rounded-lg bg-gray-50">
-                <Image
-                  src={brand.logo}
-                  alt={brand.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+              <div className="w-full h-16 mb-3 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center">
+                {brand.logo ? (
+                  <Image
+                    src={brand.logo}
+                    alt={brand.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Icon name="Store" size={24} className="text-text-secondary" />
+                  </div>
+                )}
               </div>
               <h3 className="font-heading font-semibold text-text-primary text-sm mb-1 group-hover:text-primary transition-colors">
                 {brand.name}
@@ -78,9 +62,12 @@ const FeaturedBrands = () => {
       </div>
 
       <div className="text-center mt-8">
-        <button className="text-primary font-body font-medium hover:underline transition-all duration-200">
+        <Link 
+          to="/brands" 
+          className="text-primary font-body font-medium hover:underline transition-all duration-200"
+        >
           View All Brands
-        </button>
+        </Link>
       </div>
     </div>
   );

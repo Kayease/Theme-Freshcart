@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Icon from '../../components/AppIcon';
@@ -6,6 +6,7 @@ import Footer from '../../components/ui/Footer';
 import ToastContainer from '../../components/ui/ToastContainer';
 import { useAuth } from '../../contexts/AuthContext';
 import { IMAGES } from '../../utils/imageMap';
+import productsData from '../../data/products.json';
 
 const HomeStyle3 = () => {
   const { addToCart, addToWishlist, toast } = useAuth();
@@ -18,12 +19,10 @@ const HomeStyle3 = () => {
     { number: '99%', label: 'Satisfaction' }
   ];
 
-  const products = [
-    { name: 'Organic Bananas', price: '$3.99', image: IMAGES.PRODUCTS.BANANAS, badge: 'Bestseller', rating: 4.8 },
-    { name: 'Fresh Bread', price: '$2.49', image: IMAGES.PRODUCTS.BREAD, badge: 'Fresh', rating: 4.6 },
-    { name: 'Farm Eggs', price: '$6.99', image: IMAGES.PRODUCTS.EGGS, badge: 'Premium', rating: 4.9 },
-    { name: 'Milk Gallon', price: '$4.99', image: IMAGES.PRODUCTS.MILK, badge: 'Organic', rating: 4.7 }
-  ];
+  const products = useMemo(() => {
+    const sorted = [...productsData.products].sort((a, b) => b.rating - a.rating);
+    return sorted.slice(0, 4);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -92,30 +91,30 @@ const HomeStyle3 = () => {
             {products.map((product, index) => (
               <div key={index} className="group cursor-pointer">
                 <div className="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                  <div className="relative mb-4" onClick={() => navigate(`/product-details?id=${index + 1}&name=${encodeURIComponent(product.name)}`)}>
+                    <div className="relative mb-4" onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}>
                     <img
                       src={product.image}
                       alt={product.name}
                       className="w-full h-40 object-cover rounded-xl"
                     />
                     <span className="absolute top-3 left-3 bg-primary text-white text-xs px-2 py-1 rounded-full">
-                      {product.badge}
+                      Popular
                     </span>
                     <button
                       className="absolute top-3 right-3 bg-white/90 rounded-full p-1"
                       onClick={(e) => {
                         e.stopPropagation();
-                        addToWishlist({ id: `featured-${index}`, name: product.name, price: parseFloat(product.price.replace('$', '')), image: product.image });
+                        addToWishlist(product);
                       }}
                     >
                       <Icon name="Heart" size={12} className="text-red-500" />
                     </button>
                   </div>
-                  <h3 className="font-heading font-bold text-lg mb-2 cursor-pointer" onClick={() => navigate(`/product-details?id=${index + 1}&name=${encodeURIComponent(product.name)}`)}>{product.name}</h3>
+                  <h3 className="font-heading font-bold text-lg mb-2 cursor-pointer" onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}>{product.name}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-primary">{product.price}</span>
+                    <span className="text-2xl font-bold text-primary">${product.price.toFixed(2)}</span>
                     <button
-                      onClick={() => addToCart({ id: `featured-${index}`, name: product.name, price: parseFloat(product.price.replace('$', '')), image: product.image })}
+                      onClick={() => addToCart(product, 1)}
                       className="w-10 h-10 bg-primary/10 hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-all"
                     >
                       <Icon name="Plus" size={16} />

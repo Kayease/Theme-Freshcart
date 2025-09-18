@@ -1,0 +1,307 @@
+{
+  "brands": [
+    {
+      "id": 1,
+      "name": "Organic Valley",
+      "logo": "/images/placeholder.jpg",
+      "description": "Premium organic dairy products",
+      "featured": true
+    },
+    {
+      "id": 2,
+      "name": "Fresh Farms",
+      "logo": "/images/placeholder.jpg",
+      "description": "Farm-fresh produce daily",
+      "featured": true
+    },
+    {
+      "id": 3,
+      "name": "Ocean's Best",
+      "logo": "/images/placeholder.jpg",
+      "description": "Premium seafood selection",
+      "featured": true
+    },
+    {
+      "id": 4,
+      "name": "Baker's Choice",
+      "logo": "/images/placeholder.jpg",
+      "description": "Artisan breads & pastries",
+      "featured": true
+    },
+    {
+      "id": 5,
+      "name": "Green Garden",
+      "logo": "/images/placeholder.jpg",
+      "description": "Organic vegetables & herbs",
+      "featured": true
+    },
+    {
+      "id": 6,
+      "name": "Pure Pantry",
+      "logo": "/images/placeholder.jpg",
+      "description": "Premium pantry essentials",
+      "featured": false
+    },
+    {
+      "id": 7,
+      "name": "Healthy Harvest",
+      "logo": "/images/placeholder.jpg",
+      "description": "Wholesome grains and cereals",
+      "featured": false
+    },
+    {
+      "id": 8,
+      "name": "Nature's Best",
+      "logo": "/images/placeholder.jpg",
+      "description": "Natural health foods",
+      "featured": false
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Dairy & Eggs",
+      "image": "/images/categories/dairy-eggs.jpg",
+      "featured": true
+    },
+    {
+      "id": 2,
+      "name": "Fruits & Vegetables",
+      "image": "/images/categories/fresh-fruits.jpg",
+      "featured": true
+    },
+    {
+      "id": 3,
+      "name": "Meat & Seafood",
+      "image": "/images/categories/meat-seafood.jpg",
+      "featured": true
+    },
+    {
+      "id": 4,
+      "name": "Bakery",
+      "image": "/images/placeholder.jpg",
+      "featured": true
+    },
+    {
+      "id": 5,
+      "name": "Pantry Staples",
+      "image": "/images/placeholder.jpg",
+      "featured": true
+    },
+    {
+      "id": 6,
+      "name": "Beverages",
+      "image": "/images/categories/beverages.jpg",
+      "featured": false
+    },
+    {
+      "id": 7,
+      "name": "Snacks",
+      "image": "/images/categories/snacks.jpg",
+      "featured": false
+    },
+    {
+      "id": 8,
+      "name": "Frozen Foods",
+      "image": "/images/placeholder.jpg",
+      "featured": false
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Organic Whole Milk",
+      "brand": "Organic Valley",
+      "brandId": 1,
+      "category": "Dairy & Eggs",
+      "categoryId": 1,
+      "price": 4.99,
+      "image": "/images/products/milk.jpg",
+      "rating": 4.8,
+      "reviews": 120,
+      "stock": 50,
+      "inStock": true,
+      "description": "Fresh organic whole milk from grass-fed cows"
+    },
+    {
+      "id": 2,
+      "name": "Farm Fresh Eggs",
+      "brand": "Fresh Farms",
+      "brandId": 2,
+      "category": "Dairy & Eggs",
+      "categoryId": 1,
+      "price": 3.49,
+      "image": "/images/products/eggs.jpg",
+      "rating": 4.7,
+      "reviews": 85,
+      "stock": 40,
+      "inStock": true,
+      "description": "Free-range eggs from pasture-raised hens"
+    },
+    {
+      "id": 3,
+      "name": "Atlantic Salmon Fillet",
+      "brand": "Ocean's Best",
+      "brandId": 3,
+      "category": "Meat & Seafood",
+      "categoryId": 3,
+      "price": 12.99,
+      "image": "/images/products/salmon.jpg",
+      "rating": 4.6,
+      "reviews": 65,
+      "stock": 25,
+      "inStock": true,
+      "description": "Wild-caught Atlantic salmon, rich in omega-3"
+    },
+    {
+      "id": 4,
+      "name": "Artisan Bread",
+      "brand": "Baker's Choice",
+      "brandId": 4,
+      "category": "Bakery",
+      "categoryId": 4,
+      "price": 5.49,
+      "image": "/images/products/bread.jpg",
+      "rating": 4.6,
+      "reviews": 140,
+      "stock": 30,
+      "inStock": true,
+      "description": "Freshly baked artisan bread"
+    },
+    {
+      "id": 5,
+      "name": "Organic Honey",
+      "brand": "Pure Pantry",
+      "brandId": 6,
+      "category": "Pantry Staples",
+      "categoryId": 5,
+      "price": 7.99,
+      "image": "/images/products/honey.jpg",
+      "rating": 4.7,
+      "reviews": 110,
+      "stock": 45,
+      "inStock": true,
+      "description": "Raw organic honey"
+    },
+    {
+      "id": 6,
+      "name": "Extra Virgin Olive Oil",
+      "brand": "Pure Pantry",
+      "brandId": 6,
+      "category": "Pantry Staples",
+      "categoryId": 5,
+      "price": 9.99,
+      "image": "/images/products/olive-oil.jpg",
+      "rating": 4.7,
+      "reviews": 110,
+      "stock": 45,
+      "inStock": true,
+      "description": "Cold-pressed extra virgin olive oil from Italy"
+    },
+    {
+      "id": 7,
+      "name": "Organic Avocados",
+      "brand": "Fresh Farms",
+      "brandId": 2,
+      "category": "Fruits & Vegetables",
+      "categoryId": 2,
+      "price": 6.99,
+      "image": "/images/products/avocados.jpg",
+      "rating": 4.6,
+      "reviews": 95,
+      "stock": 35,
+      "inStock": true,
+      "description": "Perfectly ripe organic avocados"
+    },
+    {
+      "id": 8,
+      "name": "Greek Yogurt",
+      "brand": "Organic Valley",
+      "brandId": 1,
+      "category": "Dairy & Eggs",
+      "categoryId": 1,
+      "price": 4.49,
+      "image": "/images/products/yogurt.jpg",
+      "rating": 4.8,
+      "reviews": 130,
+      "stock": 55,
+      "inStock": true,
+      "description": "Creamy Greek yogurt, high in protein"
+    },
+    {
+      "id": 9,
+      "name": "Honeycrisp Apples",
+      "brand": "Fresh Farms",
+      "brandId": 2,
+      "category": "Fruits & Vegetables",
+      "categoryId": 2,
+      "price": 3.99,
+      "image": "/images/products/honeycrisp-apples.jpg",
+      "rating": 4.7,
+      "reviews": 105,
+      "stock": 30,
+      "inStock": true,
+      "description": "Crisp and sweet honeycrisp apples"
+    },
+    {
+      "id": 10,
+      "name": "Navel Oranges",
+      "brand": "Fresh Farms",
+      "brandId": 2,
+      "category": "Fruits & Vegetables",
+      "categoryId": 2,
+      "price": 4.29,
+      "image": "/images/products/oranges.jpg",
+      "rating": 4.5,
+      "reviews": 82,
+      "stock": 40,
+      "inStock": true,
+      "description": "Juicy and sweet navel oranges"
+    },
+    {
+      "id": 11,
+      "name": "Seedless Grapes",
+      "brand": "Fresh Farms",
+      "brandId": 2,
+      "category": "Fruits & Vegetables",
+      "categoryId": 2,
+      "price": 5.49,
+      "image": "/images/products/grapes.jpg",
+      "rating": 4.4,
+      "reviews": 76,
+      "stock": 50,
+      "inStock": true,
+      "description": "Fresh seedless grapes"
+    },
+    {
+      "id": 12,
+      "name": "Organic Bananas",
+      "brand": "Fresh Farms",
+      "brandId": 2,
+      "category": "Fruits & Vegetables",
+      "categoryId": 2,
+      "price": 1.29,
+      "image": "/images/products/bananas.jpg",
+      "rating": 4.6,
+      "reviews": 98,
+      "stock": 60,
+      "inStock": true,
+      "description": "Organic bananas by the pound"
+    },
+    {
+      "id": 13,
+      "name": "Red Apples",
+      "brand": "Fresh Farms",
+      "brandId": 2,
+      "category": "Fruits & Vegetables",
+      "categoryId": 2,
+      "price": 2.99,
+      "image": "/images/products/apples.jpg",
+      "rating": 4.5,
+      "reviews": 90,
+      "stock": 45,
+      "inStock": true,
+      "description": "Crisp red apples"
+    }
+  ]
+}

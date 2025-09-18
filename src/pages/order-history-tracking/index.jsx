@@ -10,6 +10,7 @@ import OrderFilters from './components/OrderFilters';
 import FavoriteOrdersSection from './components/FavoriteOrdersSection';
 import OrderTrackingModal from './components/OrderTrackingModal';
 import Footer from '../../components/ui/Footer';
+import SEO from '../../components/SEO';
 
 const OrderHistoryTracking = () => {
   const navigate = useNavigate();
@@ -298,6 +299,7 @@ const OrderHistoryTracking = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Order History | FreshCart" description="Track active orders and browse past purchases." />
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
+import SEO from '../../components/SEO';
 import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -11,6 +12,8 @@ import SearchSuggestions from './components/SearchSuggestions';
 import ActiveFilters from './components/ActiveFilters';
 import NoResults from './components/NoResults';
 import Footer from '../../components/ui/Footer';
+import productsData from '../../data/products.json';
+
 const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
@@ -18,92 +21,155 @@ const SearchResults = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
   const [filters, setFilters] = useState({
-    category: [],
+    category: searchParams.get('category') ? [searchParams.get('category')] : [],
     priceRange: [0, 100],
-    brands: [],
+    brands: searchParams.get('brand') ? [searchParams.get('brand')] : [],
     dietary: [],
     rating: 0,
-    availability: 'all'
+    availability: 'all',
   });
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [recentSearches] = useState(['Fresh apples', 'Organic milk', 'Whole grain bread']);
-  
+  const [loading, setLoading] = useState(true);
+  const [recentSearches] = useState([
+    'Fresh apples',
+    'Organic milk',
+    'Whole grain bread',
+  ]);
+  const [availableBrands, setAvailableBrands] = useState([]);
+  const [availableCategories, setAvailableCategories] = useState([]);
+
   const searchRef = useRef(null);
 
-  // Mock product data
-  const mockProducts = [
-    {
-      id: 1,
-      name: 'Fresh Organic Apples',
-      category: 'Fresh Produce',
-      price: 4.99,
-      originalPrice: 5.99,
-      rating: 4.5,
-      reviewCount: 234,
-      image: '/api/placeholder/300/300',
-      inStock: true,
-      badge: { type: 'sale', text: '17% OFF' },
-      isWishlisted: false
-    },
-    {
-      id: 2,
-      name: 'Whole Milk - 1 Gallon',
-      category: 'Dairy & Eggs',
-      price: 3.49,
-      rating: 4.2,
-      reviewCount: 156,
-      image: '/api/placeholder/300/300',
-      inStock: true,
-      isWishlisted: true
-    },
-    {
-      id: 3,
-      name: 'Free Range Eggs - 12 Count',
-      category: 'Dairy & Eggs',
-      price: 5.99,
-      rating: 4.8,
-      reviewCount: 89,
-      image: '/api/placeholder/300/300',
-      inStock: false,
-      isWishlisted: false
-    },
-    {
-      id: 4,
-      name: 'Artisan Whole Grain Bread',
-      category: 'Bakery',
-      price: 2.99,
-      rating: 4.3,
-      reviewCount: 67,
-      image: '/api/placeholder/300/300',
-      inStock: true,
-      badge: { type: 'new', text: 'NEW' },
-      isWishlisted: false
-    },
-    {
-      id: 5,
-      name: 'Organic Bananas',
-      category: 'Fresh Produce',
-      price: 1.99,
-      rating: 4.1,
-      reviewCount: 345,
-      image: '/api/placeholder/300/300',
-      inStock: true,
-      isWishlisted: false
-    },
-    {
-      id: 6,
-      name: 'Wild Caught Salmon',
-      category: 'Meat & Seafood',
-      price: 12.99,
-      rating: 4.7,
-      reviewCount: 78,
-      image: '/api/placeholder/300/300',
-      inStock: true,
-      badge: { type: 'organic', text: 'ORGANIC' },
-      isWishlisted: true
+  // Load products from our dataset
+  useEffect(() => {
+    setLoading(true);
+
+    // Get all unique brands and categories for filters
+    const brands = [...new Set(productsData.brands.map(brand => brand.name))];
+    const categories = [
+      ...new Set(productsData.categories.map(category => category.name)),
+    ];
+
+    setAvailableBrands(brands);
+    setAvailableCategories(categories);
+
+    // Filter products based on search params
+    let filteredProducts = [...productsData.products];
+
+    // Filter by search query if present
+    if (searchQuery) {
+      filteredProducts = filteredProducts.filter(
+        product =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
-  ];
+
+    // Filter by brand if present
+    if (filters.brands.length > 0) {
+      filteredProducts = filteredProducts.filter(product =>
+        filters.brands.includes(product.brand)
+      );
+    }
+
+    // Filter by category if present
+    if (filters.category.length > 0) {
+      filteredProducts = filteredProducts.filter(product =>
+        filters.category.includes(product.category)
+      );
+    }
+
+    // Map to the format expected by the component
+    const formattedProducts = filteredProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      price: product.price,
+      rating: product.rating,
+      reviewCount: product.reviews,
+      image: product.image || '/images/placeholder.jpg',
+      inStock: product.stock > 0,
+      isWishlisted: false,
+    }));
+
+    setProducts(formattedProducts);
+    setLoading(false);
+  }, [searchQuery, filters, searchParams]);
+
+  // Update filters when URL params change
+  useEffect(() => {
+    const brandParam = searchParams.get('brand');
+    const categoryParam = searchParams.get('category');
+
+    if (brandParam && !filters.brands.includes(brandParam)) {
+      setFilters(prev => ({
+        ...prev,
+        brands: [brandParam],
+      }));
+    }
+
+    if (categoryParam && !filters.category.includes(categoryParam)) {
+      setFilters(prev => ({
+        ...prev,
+        category: [categoryParam],
+      }));
+    }
+  }, [searchParams]);
+
+  // const handleSearch = e => {
+  //   e.preventDefault();
+  //   setSearchParams({ q: searchQuery });
+  // };
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => {
+      const newFilters = { ...prev };
+
+      if (filterType === 'brands' || filterType === 'category') {
+        if (newFilters[filterType].includes(value)) {
+          newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
+        } else {
+          newFilters[filterType] = [...newFilters[filterType], value];
+        }
+      } else {
+        newFilters[filterType] = value;
+      }
+
+      // Update URL params
+      const newSearchParams = new URLSearchParams(searchParams);
+      if (filterType === 'brands' && newFilters.brands.length > 0) {
+        newSearchParams.set('brand', newFilters.brands[0]);
+      } else if (filterType === 'brands') {
+        newSearchParams.delete('brand');
+      }
+
+      if (filterType === 'category' && newFilters.category.length > 0) {
+        newSearchParams.set('category', newFilters.category[0]);
+      } else if (filterType === 'category') {
+        newSearchParams.delete('category');
+      }
+
+      setSearchParams(newSearchParams);
+      return newFilters;
+    });
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      category: [],
+      priceRange: [0, 100],
+      brands: [],
+      dietary: [],
+      rating: 0,
+      availability: 'all',
+    });
+
+    const newSearchParams = new URLSearchParams();
+    if (searchQuery) {
+      newSearchParams.set('q', searchQuery);
+    }
+    setSearchParams(newSearchParams);
+  };
 
   const sortOptions = [
     { value: 'relevance', label: 'Most Relevant' },
@@ -111,11 +177,11 @@ const SearchResults = () => {
     { value: 'price-high', label: 'Price: High to Low' },
     { value: 'rating', label: 'Customer Rating' },
     { value: 'newest', label: 'Newest Arrivals' },
-    { value: 'popularity', label: 'Most Popular' }
+    { value: 'popularity', label: 'Most Popular' },
   ];
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = event => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSuggestions(false);
       }
@@ -134,7 +200,7 @@ const SearchResults = () => {
     }, 500);
   }, [searchQuery, filters, sortBy]);
 
-  const handleSearch = (e) => {
+  const handleSearch = e => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setSearchParams({ q: searchQuery });
@@ -142,19 +208,19 @@ const SearchResults = () => {
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
+  const handleSuggestionClick = suggestion => {
     setSearchQuery(suggestion);
     setSearchParams({ q: suggestion });
     setShowSuggestions(false);
   };
 
-  const handleFiltersChange = (newFilters) => {
+  const handleFiltersChange = newFilters => {
     setFilters(newFilters);
   };
 
   const handleRemoveFilter = (filterType, value) => {
     const newFilters = { ...filters };
-    
+
     if (filterType === 'priceRange') {
       newFilters.priceRange = [0, 100];
     } else if (filterType === 'rating') {
@@ -164,7 +230,7 @@ const SearchResults = () => {
     } else if (Array.isArray(newFilters[filterType])) {
       newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
     }
-    
+
     setFilters(newFilters);
   };
 
@@ -175,7 +241,7 @@ const SearchResults = () => {
       brands: [],
       dietary: [],
       rating: 0,
-      availability: 'all'
+      availability: 'all',
     });
   };
 
@@ -183,27 +249,27 @@ const SearchResults = () => {
     if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
-    
+
     if (filters.category.length > 0 && !filters.category.includes(product.category)) {
       return false;
     }
-    
+
     if (product.price > filters.priceRange[1]) {
       return false;
     }
-    
+
     if (filters.rating > 0 && product.rating < filters.rating) {
       return false;
     }
-    
+
     if (filters.availability === 'instock' && !product.inStock) {
       return false;
     }
-    
+
     if (filters.availability === 'sale' && !product.badge?.type === 'sale') {
       return false;
     }
-    
+
     return true;
   });
 
@@ -228,11 +294,12 @@ const SearchResults = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title={`Search${searchQuery ? `: ${searchQuery}` : ''} | FreshCart`} description="Find products across categories, brands, and more." />
       <Header />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Breadcrumb />
-        
+
         {/* Search Bar */}
         <div className="mb-6">
           <div className="relative max-w-2xl mx-auto" ref={searchRef}>
@@ -241,7 +308,7 @@ const SearchResults = () => {
                 type="search"
                 placeholder="Search for Products..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
                 className="pl-12 pr-16 py-3 text-base"
               />
@@ -257,14 +324,14 @@ const SearchResults = () => {
                 Search
               </button>
             </form>
-            
+
             {showSuggestions && (
               <SearchSuggestions
                 query={searchQuery}
                 suggestions={[
                   { text: 'Fresh organic apples', count: 24 },
                   { text: 'Apple juice', count: 12 },
-                  { text: 'Apple pie', count: 8 }
+                  { text: 'Apple pie', count: 8 },
                 ]}
                 onSuggestionClick={handleSuggestionClick}
               />
@@ -299,7 +366,9 @@ const SearchResults = () => {
               Search Results
             </h1>
             <p className="text-text-secondary">
-              {loading ? 'Searching...' : `${sortedProducts.length} results found for "${searchQuery}"`}
+              {loading
+                ? 'Searching...'
+                : `${sortedProducts.length} results found for "${searchQuery}"`}
             </p>
           </div>
         )}
@@ -329,10 +398,7 @@ const SearchResults = () => {
           {/* Filters Sidebar - Desktop */}
           <div className="hidden lg:block lg:col-span-3">
             <div className="sticky top-nav-height">
-              <SearchFilters
-                onFiltersChange={handleFiltersChange}
-                isMobile={false}
-              />
+              <SearchFilters onFiltersChange={handleFiltersChange} isMobile={false} />
             </div>
           </div>
 
@@ -355,15 +421,15 @@ const SearchResults = () => {
                 <Icon name="Filter" size={16} />
                 <span>Filters</span>
               </Button>
-              
+
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-text-secondary">Sort by:</span>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
+                  onChange={e => setSortBy(e.target.value)}
                   className="px-3 py-2 border border-border rounded-button bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 >
-                  {sortOptions.map((option) => (
+                  {sortOptions.map(option => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
@@ -376,7 +442,10 @@ const SearchResults = () => {
             {loading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="bg-surface border border-border rounded-card p-4 animate-pulse">
+                  <div
+                    key={i}
+                    className="bg-surface border border-border rounded-card p-4 animate-pulse"
+                  >
                     <div className="aspect-square bg-border rounded-card mb-3"></div>
                     <div className="h-4 bg-border rounded mb-2"></div>
                     <div className="h-3 bg-border rounded mb-2"></div>
@@ -386,11 +455,8 @@ const SearchResults = () => {
               </div>
             ) : hasResults ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {sortedProducts.map((product) => (
-                  <SearchProductCard
-                    key={product.id}
-                    product={product}
-                  />
+                {sortedProducts.map(product => (
+                  <SearchProductCard key={product.id} product={product} />
                 ))}
               </div>
             ) : (
@@ -410,7 +476,10 @@ const SearchResults = () => {
       {/* Mobile Filters Modal */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-overlay">
-          <div className="absolute inset-0 bg-background/80" onClick={() => setShowMobileFilters(false)} />
+          <div
+            className="absolute inset-0 bg-background/80"
+            onClick={() => setShowMobileFilters(false)}
+          />
           <SearchFilters
             onFiltersChange={handleFiltersChange}
             isMobile={true}

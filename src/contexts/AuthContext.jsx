@@ -15,55 +15,144 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Cart state and functions
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  
+  // Derived state for cart and wishlist counts
+  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const wishlistCount = wishlist.length;
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Check if user is logged in on mount
+  // Check if user is logged in on mount and load cart/wishlist data
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Failed to parse user from localStorage:', error);
+      }
     }
 
     // Load cart from localStorage (works for both guest and logged-in users)
     const storedCart = localStorage.getItem('cart');
     if (storedCart) {
-      setCart(JSON.parse(storedCart));
+      try {
+        setCart(JSON.parse(storedCart));
+      } catch (error) {
+        console.error('Failed to parse cart from localStorage:', error);
+        localStorage.removeItem('cart');
+      }
     }
 
     // Load wishlist from localStorage (works for both guest and logged-in users)
     const storedWishlist = localStorage.getItem('wishlist');
     if (storedWishlist) {
-      setWishlist(JSON.parse(storedWishlist));
+      try {
+        setWishlist(JSON.parse(storedWishlist));
+      } catch (error) {
+        console.error('Failed to parse wishlist from localStorage:', error);
+        localStorage.removeItem('wishlist');
+      }
     }
 
     setLoading(false);
   }, []);
+  
+  // Order history management
+  const addOrder = (orderDetails) => {
+    if (!user) return;
+    
+    setUser(prevUser => {
+      const newOrder = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        ...orderDetails
+      };
+      
+      const updatedUser = {
+        ...prevUser,
+        orderHistory: [...(prevUser.orderHistory || []), newOrder]
+      };
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      toast.success('Order placed successfully!');
+      
+      // Clear cart after successful order
+      setCart([]);
+      localStorage.removeItem('cart');
+      
+      return updatedUser;
+    });
+  };
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    if (cart.length > 0) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    } else {
+      localStorage.removeItem('cart');
+    }
   }, [cart]);
 
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    if (wishlist.length > 0) {
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    } else {
+      localStorage.removeItem('wishlist');
+    }
   }, [wishlist]);
 
   const login = async (email, password) => {
     try {
-      // Mock login - replace with actual API call
-      const mockUser = {
-        id: '1',
-        name: 'John Doe',
-        email: email,
-        profileImage: null
+      const registeredUserRaw = localStorage.getItem('registeredUser');
+      if (!registeredUserRaw) {
+        toast.info('No account found. Please register.');
+        navigate('/auth/signup');
+        return { success: false, error: 'User not registered' };
+      }
+      const registeredUser = JSON.parse(registeredUserRaw);
+      if (registeredUser.email === email && registeredUser.password === password) {
+        const sessionUser = { ...registeredUser };
+        delete sessionUser.password;
+        setUser(sessionUser);
+        localStorage.setItem('user', JSON.stringify(sessionUser));
+        toast.success('Login successful! Welcome back.');
+        navigate('/home-dashboard-1');
+        return { success: true };
+      }
+      toast.error('Invalid email or password');
+      return { success: false, error: 'Invalid credentials' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const register = async (name, email, password) => {
+    try {
+      const newUser = {
+        id: Date.now().toString(),
+        name,
+        email,
+        password,
+        profileImage: null,
+        addresses: [],
+        paymentMethods: [],
+        orderHistory: []
       };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      // Persist registration
+      localStorage.setItem('registeredUser', JSON.stringify(newUser));
+      // Auto-login after first registration
+      const sessionUser = { ...newUser };
+      delete sessionUser.password;
+      setUser(sessionUser);
+      localStorage.setItem('user', JSON.stringify(sessionUser));
+      toast.success('Registration successful! Welcome to FreshCart.');
+      navigate('/home-dashboard-1');
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -73,7 +162,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    navigate('/');
+    // preserve any remembered email for convenience
+    navigate('/home-dashboard');
   };
 
   // Cart functions (work for both guest and logged-in users)
@@ -99,21 +189,34 @@ export const AuthProvider = ({ children }) => {
 
   const updateCartItem = (productId, quantity) => {
     setCart(prevCart => {
+      let updatedCart;
+      
       if (quantity <= 0) {
-        return prevCart.filter(item => item.id !== productId);
+        // Remove item if quantity is 0 or negative
+        updatedCart = prevCart.filter(item => item.id !== productId);
+        toast.info('Item removed from cart');
+      } else {
+        // Update quantity
+        updatedCart = prevCart.map(item => 
+          item.id === productId 
+            ? { ...item, quantity } 
+            : item
+        );
+        toast.success('Cart updated');
       }
-      return prevCart.map(item => 
-        item.id === productId ? { ...item, quantity } : item
-      );
+      
+      return updatedCart;
     });
   };
 
   const removeFromCart = (productId) => {
     setCart(prevCart => prevCart.filter(item => item.id !== productId));
+    toast.info('Item removed from cart');
   };
 
   const clearCart = () => {
     setCart([]);
+    toast.info('Cart cleared');
   };
 
   // Wishlist functions (work for both guest and logged-in users)
@@ -122,9 +225,12 @@ export const AuthProvider = ({ children }) => {
       const existingItem = prevWishlist.find(item => item.id === product.id);
       
       if (existingItem) {
-        toast.warning(`${product.name} is already in your wishlist!`);
-        return prevWishlist;
+        // If item exists, remove it (toggle behavior)
+        const updatedWishlist = prevWishlist.filter(item => item.id !== product.id);
+        toast.info(`${product.name} removed from wishlist`);
+        return updatedWishlist;
       } else {
+        // Add new item to wishlist
         toast.success(`${product.name} added to wishlist!`);
         return [...prevWishlist, product];
       }
@@ -139,6 +245,18 @@ export const AuthProvider = ({ children }) => {
     setWishlist(prevWishlist => prevWishlist.filter(item => item.id !== productId));
   };
 
+  const isInWishlist = (productId) => {
+    return wishlist.some(item => item.id === productId);
+  };
+
+  const toggleWishlist = (product) => {
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  };
+
   const moveToCart = (productId, quantity = 1) => {
     const product = wishlist.find(item => item.id === productId);
     if (product) {
@@ -147,26 +265,109 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // User address management
+  const addAddress = (address) => {
+    setUser(prevUser => {
+      const updatedUser = {
+        ...prevUser,
+        addresses: [...(prevUser.addresses || []), { id: Date.now().toString(), ...address }]
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      toast.success('Address added successfully!');
+      return updatedUser;
+    });
+  };
+
+  const updateAddress = (addressId, updatedAddress) => {
+    setUser(prevUser => {
+      const updatedAddresses = prevUser.addresses.map(addr => 
+        addr.id === addressId ? { ...addr, ...updatedAddress } : addr
+      );
+      const updatedUser = { ...prevUser, addresses: updatedAddresses };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      toast.success('Address updated successfully!');
+      return updatedUser;
+    });
+  };
+
+  const deleteAddress = (addressId) => {
+    setUser(prevUser => {
+      const updatedAddresses = prevUser.addresses.filter(addr => addr.id !== addressId);
+      const updatedUser = { ...prevUser, addresses: updatedAddresses };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      toast.success('Address removed successfully!');
+      return updatedUser;
+    });
+  };
+
+  // Payment methods management
+  const addPaymentMethod = (paymentMethod) => {
+    setUser(prevUser => {
+      const updatedUser = {
+        ...prevUser,
+        paymentMethods: [...(prevUser.paymentMethods || []), { id: Date.now().toString(), ...paymentMethod }]
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      toast.success('Payment method added successfully!');
+      return updatedUser;
+    });
+  };
+
+  const updatePaymentMethod = (paymentId, updatedPayment) => {
+    setUser(prevUser => {
+      const updatedPayments = prevUser.paymentMethods.map(payment => 
+        payment.id === paymentId ? { ...payment, ...updatedPayment } : payment
+      );
+      const updatedUser = { ...prevUser, paymentMethods: updatedPayments };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      toast.success('Payment method updated successfully!');
+      return updatedUser;
+    });
+  };
+
+  const deletePaymentMethod = (paymentId) => {
+    setUser(prevUser => {
+      const updatedPayments = prevUser.paymentMethods.filter(payment => payment.id !== paymentId);
+      const updatedUser = { ...prevUser, paymentMethods: updatedPayments };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      toast.success('Payment method removed successfully!');
+      return updatedUser;
+    });
+  };
+
   const value = {
     user,
     loading,
     isAuthenticated: !!user,
     login,
     logout,
+    register,
+    // Order management
+    addOrder,
+    // Address management
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    // Payment method management
+    addPaymentMethod,
+    updatePaymentMethod,
+    deletePaymentMethod,
     // Cart state and functions
     cart,
-    cartItemCount: cart.reduce((total, item) => total + item.quantity, 0),
-    cartTotal: cart.reduce((total, item) => total + (item.price * item.quantity), 0),
+    cartItemCount,
+    cartTotal,
     addToCart,
     updateCartItem,
     removeFromCart,
     clearCart,
     // Wishlist state and functions
     wishlist,
-    wishlistCount: wishlist.length,
+    wishlistCount,
     addToWishlist,
     removeFromWishlist,
     moveToCart,
+    isInWishlist,
+    toggleWishlist,
     // Toast functions
     toast
   };
@@ -178,4 +379,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext; 
+export default AuthContext;

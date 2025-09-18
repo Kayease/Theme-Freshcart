@@ -13,7 +13,7 @@ const HeroSlider = () => {
       title: "Fresh Organic Produce",
       subtitle: "Farm to Table in 30 Minutes",
       description: "Get the freshest organic fruits and vegetables delivered to your doorstep with our express delivery service.",
-      image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=400&fit=crop",
+      image: "/images/banners/hero-groceries.jpg",
       ctaText: "Shop Now",
       ctaLink: "/product-categories-browse",
       bgColor: "bg-gradient-to-r from-green-500 to-green-600"
@@ -23,7 +23,7 @@ const HeroSlider = () => {
       title: "Premium Dairy Products",
       subtitle: "Fresh from Local Farms",
       description: "Discover our selection of premium dairy products sourced directly from trusted local farms.",
-      image: "https://images.pexels.com/photos/416978/pexels-photo-416978.jpeg?w=800&h=400&fit=crop",
+      image: "/images/banners/hero-groceries-wide.jpg",
       ctaText: "Explore Dairy",
       ctaLink: "/product-categories-browse",
       bgColor: "bg-gradient-to-r from-blue-500 to-blue-600"
@@ -33,7 +33,7 @@ const HeroSlider = () => {
       title: "Weekend Special Offers",
       subtitle: "Up to 40% Off",
       description: "Don't miss our weekend specials on pantry essentials, snacks, and household items.",
-      image: "https://images.pixabay.com/photo/2017/06/02/18/24/fruit-2367029_1280.jpg?w=800&h=400&fit=crop",
+      image: "/images/banners/hero-groceries-square.jpg",
       ctaText: "View Offers",
       ctaLink: "/product-categories-browse",
       bgColor: "bg-gradient-to-r from-orange-500 to-red-500"

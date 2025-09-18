@@ -1,9 +1,7 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import HeroSlider from './components/HeroSlider';
-import SmartImage from '../../components/SmartImage';
 import CategoryCards from './components/CategoryCards';
 import FeaturedBrands from './components/FeaturedBrands';
 import PopularProducts from './components/PopularProducts';
@@ -11,13 +9,15 @@ import RecentlyPurchased from './components/RecentlyPurchased';
 import Footer from '../../components/ui/Footer';
 import ToastContainer from '../../components/ui/ToastContainer';
 import { useAuth } from '../../contexts/AuthContext';
+import SEO from '../../components/SEO';
 
 const HomeStyle1 = () => {
-  const { addToCart, toast } = useAuth();
+  const { toast } = useAuth();
   const { toasts, removeToast } = toast;
-  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Home | FreshCart" description="Discover fresh products, featured brands, and popular picks." />
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
@@ -25,15 +25,6 @@ const HomeStyle1 = () => {
 
         <section className="mb-12">
           <HeroSlider />
-          {/* Example SmartImage usage for optimized responsive image */}
-          <div className="mt-6 rounded-xl overflow-hidden shadow-card">
-            <SmartImage
-              src="/images/placeholder.jpg"
-              alt="Fresh seasonal produce"
-              className="w-full h-48 md:h-64"
-              sizes="(max-width:768px) 100vw, 1024px"
-            />
-          </div>
         </section>
 
         {/* Enhanced Categories */}

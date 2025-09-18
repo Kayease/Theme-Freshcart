@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
+import SEO from '../../components/SEO';
 import CheckoutProgress from './components/CheckoutProgress';
 import DeliveryAddressSection from './components/DeliveryAddressSection';
 import DeliveryTimeSlot from './components/DeliveryTimeSlot';
@@ -10,10 +11,12 @@ import OrderSummary from './components/OrderSummary';
 import DeliveryInstructions from './components/DeliveryInstructions';
 import PlaceOrderSection from './components/PlaceOrderSection';
 import Footer from '../../components/ui/Footer';
+import { useAuth } from '../../contexts/AuthContext';
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState([]);
+  const { user, cartTotal, cart, addOrder, addAddress } = useAuth();
   
   // Form state
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -22,25 +25,15 @@ const CheckoutPage = () => {
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [tip, setTip] = useState(0);
 
-  // Initialize with default selections
+  // Initialize with default selections from user profile
   useEffect(() => {
-    // Auto-select first address if available
-    const defaultAddress = {
-      id: 1,
-      type: 'home',
-      fullName: 'John Smith',
-      phone: '+1 (555) 123-4567',
-      addressLine1: '123 Oak Street',
-      addressLine2: 'Apt 4B',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      isDefault: true
-    };
-    setSelectedAddress(defaultAddress);
-    setCompletedSteps([1]);
-    setCurrentStep(2);
-  }, []);
+    const defaultAddress = user?.addresses?.[0] || null;
+    if (defaultAddress) {
+      setSelectedAddress(defaultAddress);
+      setCompletedSteps([1]);
+      setCurrentStep(2);
+    }
+  }, [user]);
 
   // Update progress based on selections
   useEffect(() => {
@@ -69,6 +62,7 @@ const CheckoutPage = () => {
   };
 
   const handleAddNewAddress = (address) => {
+    addAddress(address);
     setSelectedAddress(address);
   };
 
@@ -81,17 +75,18 @@ const CheckoutPage = () => {
   };
 
   const handlePlaceOrder = () => {
-    console.log('Order placed:', {
+    addOrder({
       address: selectedAddress,
       timeSlot: selectedTimeSlot,
       payment: selectedPayment,
       instructions: deliveryInstructions,
-      tip: tip
+      tip: tip,
+      items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity }))
     });
   };
 
   // Calculate totals
-  const subtotal = 15.96; // Mock subtotal from cart
+  const subtotal = cartTotal;
   const tax = subtotal * 0.08;
   const deliveryFee = selectedTimeSlot?.price || 0;
   const total = subtotal + tax + deliveryFee + tip;
@@ -104,6 +99,7 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Checkout | FreshCart" description="Complete your order and schedule delivery." />
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

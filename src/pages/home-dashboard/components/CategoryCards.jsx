@@ -1,78 +1,65 @@
-import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
-import { IMAGES } from '../../../utils/imageMap';
+import productsData from '../../../data/products.json';
 
 const CategoryCards = () => {
   const scrollRef = useRef(null);
+  const [categories, setCategories] = useState([]);
+  const navigate = useNavigate();
 
-  const categories = [
-    {
-      id: 1,
-      name: "Fresh Produce",
-      icon: "Apple",
-      image: IMAGES.CATEGORIES.FRESH_FRUITS,
-      itemCount: "500+ items",
-      color: "bg-green-100 text-green-700"
-    },
-    {
-      id: 2,
-      name: "Dairy & Eggs",
-      icon: "Milk",
-      image: IMAGES.CATEGORIES.DAIRY_EGGS,
-      itemCount: "150+ items",
-      color: "bg-blue-100 text-blue-700"
-    },
-    {
-      id: 3,
-      name: "Meat & Seafood",
-      icon: "Fish",
-      image: IMAGES.CATEGORIES.MEAT_SEAFOOD,
-      itemCount: "200+ items",
-      color: "bg-red-100 text-red-700"
-    },
-    {
-      id: 4,
-      name: "Pantry Essentials",
-      icon: "Package",
-      image: IMAGES.CATEGORIES.VEGETABLES,
-      itemCount: "800+ items",
-      color: "bg-yellow-100 text-yellow-700"
-    },
-    {
-      id: 5,
-      name: "Beverages",
-      icon: "Coffee",
-      image: IMAGES.CATEGORIES.BEVERAGES,
-      itemCount: "300+ items",
-      color: "bg-purple-100 text-purple-700"
-    },
-    {
-      id: 6,
-      name: "Snacks",
-      icon: "Cookie",
-      image: IMAGES.CATEGORIES.SNACKS,
-      itemCount: "250+ items",
-      color: "bg-orange-100 text-orange-700"
-    },
-    {
-      id: 7,
-      name: "Frozen Foods",
-      icon: "Snowflake",
-      image: IMAGES.CATEGORIES.DAIRY,
-      itemCount: "180+ items",
-      color: "bg-cyan-100 text-cyan-700"
-    },
-    {
-      id: 8,
-      name: "Health & Beauty",
-      icon: "Heart",
-      image: IMAGES.CATEGORIES.HEALTH_BEAUTY,
-      itemCount: "120+ items",
-      color: "bg-pink-100 text-pink-700"
-    }
-  ];
+  // Color mapping for categories
+  const colorMap = {
+    "Dairy & Eggs": "bg-blue-100 text-blue-700",
+    "Fruits & Vegetables": "bg-green-100 text-green-700",
+    "Meat & Seafood": "bg-red-100 text-red-700",
+    "Bakery": "bg-yellow-100 text-yellow-700",
+    "Pantry Staples": "bg-orange-100 text-orange-700",
+    "Beverages": "bg-purple-100 text-purple-700",
+    "Snacks": "bg-pink-100 text-pink-700",
+    "Frozen Foods": "bg-cyan-100 text-cyan-700"
+  };
+
+  // Icon mapping for categories
+  const iconMap = {
+    "Dairy & Eggs": "Milk",
+    "Fruits & Vegetables": "Apple",
+    "Meat & Seafood": "Fish",
+    "Bakery": "Cookie",
+    "Pantry Staples": "Package",
+    "Beverages": "Coffee",
+    "Snacks": "Pizza",
+    "Frozen Foods": "Snowflake"
+  };
+
+  useEffect(() => {
+    // Get categories from our dataset and count products in each category
+    const categoryCounts = {};
+    productsData.products.forEach(product => {
+      if (categoryCounts[product.category]) {
+        categoryCounts[product.category]++;
+      } else {
+        categoryCounts[product.category] = 1;
+      }
+    });
+
+    // Format categories for display
+    const formattedCategories = productsData.categories.map(category => ({
+      id: category.id,
+      name: category.name,
+      icon: iconMap[category.name] || "Package",
+      image: category.image || '/images/placeholder.jpg',
+      itemCount: `${categoryCounts[category.name] || 0}+ items`,
+      color: colorMap[category.name] || "bg-gray-100 text-gray-700"
+    }));
+
+    setCategories(formattedCategories);
+  }, []);
+
+  // const handleCategoryClick = (categoryName) => {
+  //   navigate(`/search?category=${encodeURIComponent(categoryName)}`);
+  // };
 
   const scroll = (direction) => {
     if (scrollRef.current) {
@@ -82,6 +69,10 @@ const CategoryCards = () => {
         behavior: 'smooth'
       });
     }
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    navigate(`/product-categories-browse?category=${encodeURIComponent(categoryName)}`);
   };
 
   return (
@@ -95,21 +86,19 @@ const CategoryCards = () => {
             Find everything you need in one place
           </p>
         </div>
-        
+
         <div className="hidden md:flex items-center space-x-2">
           <button
             onClick={() => scroll('left')}
-            className="w-10 h-10 bg-border-light hover:bg-border rounded-full flex items-center justify-center transition-colors duration-200"
-            aria-label="Scroll left"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-surface border border-border hover:bg-primary hover:text-white transition-colors"
           >
-            <Icon name="ChevronLeft" size={20} className="text-text-primary" />
+            <Icon name="ChevronLeft" className="w-4 h-4" />
           </button>
           <button
             onClick={() => scroll('right')}
-            className="w-10 h-10 bg-border-light hover:bg-border rounded-full flex items-center justify-center transition-colors duration-200"
-            aria-label="Scroll right"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-surface border border-border hover:bg-primary hover:text-white transition-colors"
           >
-            <Icon name="ChevronRight" size={20} className="text-text-primary" />
+            <Icon name="ChevronRight" className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -117,51 +106,28 @@ const CategoryCards = () => {
       <div className="relative">
         <div
           ref={scrollRef}
-          className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex overflow-x-auto pb-4 hide-scrollbar gap-4 snap-x scroll-smooth"
         >
           {categories.map((category) => (
-            <Link
+            <div
               key={category.id}
-              to={`/product-categories-browse?category=${encodeURIComponent(category.name)}`}
-              className="flex-shrink-0 w-64 bg-surface border border-border rounded-lg hover:shadow-card transition-all duration-200 hover:border-primary group"
+              className="snap-start flex-shrink-0 w-[140px] sm:w-[180px] cursor-pointer"
+              onClick={() => handleCategoryClick(category.name)}
             >
-              <div className="p-4">
-                <div className="relative h-32 mb-4 overflow-hidden rounded-lg">
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
-                
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className={`w-10 h-10 rounded-full ${category.color} flex items-center justify-center`}>
-                    <Icon name={category.icon} size={20} />
+              <div className="bg-surface border border-border rounded-xl p-4 hover:shadow-card hover:border-primary transition-all duration-200 h-full">
+                <div className="flex flex-col items-center text-center">
+                  <div className={`w-12 h-12 rounded-full ${category.color} flex items-center justify-center mb-3`}>
+                    <Icon name={category.icon} className="w-6 h-6" />
                   </div>
-                  <div>
-                    <h3 className="font-heading font-semibold text-text-primary group-hover:text-primary transition-colors">
-                      {category.name}
-                    </h3>
-                    <p className="text-sm text-text-secondary font-caption">
-                      {category.itemCount}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-primary font-body font-medium">
-                    Shop Now
-                  </span>
-                  <Icon 
-                    name="ArrowRight" 
-                    size={16} 
-                    className="text-primary group-hover:translate-x-1 transition-transform duration-200" 
-                  />
+                  <h3 className="font-heading font-semibold text-text-primary text-sm mb-1">
+                    {category.name}
+                  </h3>
+                  <p className="text-xs text-text-secondary font-caption">
+                    {category.itemCount}
+                  </p>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>

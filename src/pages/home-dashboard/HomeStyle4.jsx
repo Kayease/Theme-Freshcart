@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Icon from '../../components/AppIcon';
@@ -6,6 +6,7 @@ import Footer from '../../components/ui/Footer';
 import ToastContainer from '../../components/ui/ToastContainer';
 import { useAuth } from '../../contexts/AuthContext';
 import { IMAGES } from '../../utils/imageMap';
+import productsData from '../../data/products.json';
 
 const HomeStyle4 = () => {
   const { addToCart, addToWishlist, toast } = useAuth();
@@ -22,6 +23,11 @@ const HomeStyle4 = () => {
     { name: 'Mike Chen', text: 'Best grocery shopping experience ever.', rating: 5, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
     { name: 'Emma Davis', text: 'Fresh products, great prices, highly recommend!', rating: 5, image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' }
   ];
+
+  const popularProducts = useMemo(() => {
+    const sorted = [...productsData.products].sort((a, b) => b.rating - a.rating);
+    return sorted.slice(0, 4);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -149,26 +155,21 @@ const HomeStyle4 = () => {
             <p className="text-text-secondary">Most loved items by our customers</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { name: 'Premium Avocados', price: '$5.99', oldPrice: '$7.99', discount: '25%', rating: 4.8, reviews: 234, image: IMAGES.PRODUCTS.AVOCADOS, badge: 'Bestseller' },
-              { name: 'Organic Salmon', price: '$14.99', oldPrice: '$18.99', discount: '21%', rating: 4.9, reviews: 189, image: IMAGES.PRODUCTS.SALMON, badge: 'Premium' },
-              { name: 'Raw Honey', price: '$9.99', oldPrice: '$12.99', discount: '23%', rating: 4.7, reviews: 156, image: IMAGES.PRODUCTS.HONEY, badge: 'Organic' },
-              { name: 'Sourdough Bread', price: '$4.49', oldPrice: '$5.99', discount: '25%', rating: 4.6, reviews: 298, image: IMAGES.PRODUCTS.BREAD, badge: 'Fresh' }
-            ].map((product, index) => (
+            {popularProducts.map((product) => (
               <div key={index} className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all group">
                 <div className="relative mb-4 cursor-pointer" onClick={() => navigate(`/product-details?id=${index + 1}&name=${encodeURIComponent(product.name)}`)}>
                   <img src={product.image} alt={product.name} className="w-full h-40 object-cover rounded-xl" />
                   <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                    -{product.discount}
+                    Popular
                   </span>
                   <span className="absolute top-2 right-2 bg-accent text-white text-xs px-2 py-1 rounded-full">
-                    {product.badge}
+                    Featured
                   </span>
                   <button
                     className="absolute top-10 right-2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToWishlist({ id: `popular-${index}`, name: product.name, price: parseFloat(product.price.replace('$', '')), image: product.image });
+                      addToWishlist(product);
                     }}
                   >
                     <Icon name="Heart" size={16} className="text-red-500" />
@@ -185,12 +186,11 @@ const HomeStyle4 = () => {
                 </div>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <span className="text-lg font-bold text-primary">{product.price}</span>
-                    <span className="text-sm text-text-secondary line-through ml-2">{product.oldPrice}</span>
+                    <span className="text-lg font-bold text-primary">${product.price.toFixed(2)}</span>
                   </div>
                 </div>
                 <button
-                  onClick={() => addToCart({ id: `popular-${index}`, name: product.name, price: parseFloat(product.price.replace('$', '')), image: product.image })}
+                  onClick={() => addToCart(product, 1)}
                   className="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-lg font-medium transition-all"
                 >
                   Add to Cart

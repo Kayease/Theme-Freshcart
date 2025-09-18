@@ -82,7 +82,7 @@ const HomeLanding = () => {
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(45,125,50,0.18),transparent_60%)]" />
                     <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
                 </div>
-                <div className="relative max-w-4xl mx-auto px-6 text-center">
+                <div className="relative max-w-4xl mx-auto px-6 text-center mt-4">
                     <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-xs font-data tracking-wide uppercase">React + Tailwind Premium Theme</div>
                     <h1 className="text-4xl md:text-5xl font-heading font-heading-bold tracking-tight mb-6 leading-tight">
                         Build a <span className="text-primary">Premium E‑commerce</span><br className="hidden sm:block" /> Experience Faster
@@ -134,31 +134,31 @@ const HomeLanding = () => {
                                 <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 3h7m0 0v7m0-7L10 14" /></svg>
                             </Link>
                         </div>
-                                                <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
-                                                        {homeVariants.map(v => (
-                                                                <Link
-                                                                    to={v.path}
-                                                                    key={v.id}
-                                                                    className="group relative rounded-2xl border border-border bg-surface shadow-card hover:shadow-modal hover:border-primary/40 transition-smooth flex flex-col overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary"
-                                                                    aria-label={`Open ${v.title}`}
-                                                                >
-                                                                    <div className={`relative h-40 flex items-center justify-center overflow-hidden bg-gradient-to-br ${v.accent}`}>
-                                                                        <div className={`w-14 h-14 ${v.iconBg} rounded-xl flex items-center justify-center backdrop-blur-sm shadow-card group-hover:scale-105 transition-transform`}>
-                                                                            <Icon name={v.icon} size={28} />
-                                                                        </div>
-                                                                        <span className="absolute top-3 left-3 bg-background/80 backdrop-blur px-2 py-1 rounded-full text-[11px] font-data tracking-wide text-text-secondary group-hover:text-primary transition-colors shadow-sm">Variant {v.id}</span>
-                                                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.5),transparent_60%)]" />
-                                                                    </div>
-                                                                    <div className="p-5 flex flex-col flex-1">
-                                                                        <h3 className="font-heading font-heading-medium text-base mb-2 group-hover:text-primary transition-colors">{v.title}</h3>
-                                                                        <p className="text-xs text-text-secondary font-body leading-relaxed flex-1">{v.desc}</p>
-                                                                        <span className="mt-4 inline-flex items-center text-xs font-body-medium text-primary group-hover:underline">Open Variant
-                                                                            <svg className="ml-1 w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 3h7m0 0v7m0-7L10 14" /></svg>
-                                                                        </span>
-                                                                    </div>
-                                                                </Link>
-                                                        ))}
-                                                </div>
+                        <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
+                            {homeVariants.map(v => (
+                                <Link
+                                    to={v.path}
+                                    key={v.id}
+                                    className="group relative rounded-2xl border border-border bg-surface shadow-card hover:shadow-modal hover:border-primary/40 transition-smooth flex flex-col overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary"
+                                    aria-label={`Open ${v.title}`}
+                                >
+                                    <div className={`relative h-40 flex items-center justify-center overflow-hidden bg-gradient-to-br ${v.accent}`}>
+                                        <div className={`w-14 h-14 ${v.iconBg} rounded-xl flex items-center justify-center backdrop-blur-sm shadow-card group-hover:scale-105 transition-transform`}>
+                                            <Icon name={v.icon} size={28} />
+                                        </div>
+                                        <span className="absolute top-3 left-3 bg-background/80 backdrop-blur px-2 py-1 rounded-full text-[11px] font-data tracking-wide text-text-secondary group-hover:text-primary transition-colors shadow-sm">Variant {v.id}</span>
+                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.5),transparent_60%)]" />
+                                    </div>
+                                    <div className="p-5 flex flex-col flex-1">
+                                        <h3 className="font-heading font-heading-medium text-base mb-2 group-hover:text-primary transition-colors">{v.title}</h3>
+                                        <p className="text-xs text-text-secondary font-body leading-relaxed flex-1">{v.desc}</p>
+                                        <span className="mt-4 inline-flex items-center text-xs font-body-medium text-primary group-hover:underline">Open Variant
+                                            <svg className="ml-1 w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 3h7m0 0v7m0-7L10 14" /></svg>
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 </section>
 

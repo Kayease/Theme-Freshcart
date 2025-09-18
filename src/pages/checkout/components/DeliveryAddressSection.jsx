@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Icon from '../../../components/AppIcon';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddress }) => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -16,33 +17,9 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
     zipCode: '',
     isDefault: false
   });
+  const { user, deleteAddress } = useAuth();
 
-  const savedAddresses = [
-    {
-      id: 1,
-      type: 'home',
-      fullName: 'John Smith',
-      phone: '+1 (555) 123-4567',
-      addressLine1: '123 Oak Street',
-      addressLine2: 'Apt 4B',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      isDefault: true
-    },
-    {
-      id: 2,
-      type: 'work',
-      fullName: 'John Smith',
-      phone: '+1 (555) 123-4567',
-      addressLine1: '456 Business Ave',
-      addressLine2: 'Suite 200',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10002',
-      isDefault: false
-    }
-  ];
+  const savedAddresses = user?.addresses || [];
 
   const handleInputChange = (field, value) => {
     setNewAddress(prev => ({
@@ -70,6 +47,13 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
         zipCode: '',
         isDefault: false
       });
+    }
+  };
+
+  const handleDeleteAddress = (id) => {
+    deleteAddress(id);
+    if (selectedAddress?.id === id) {
+      onAddressSelect(null);
     }
   };
 

@@ -21,6 +21,8 @@ export const useToast = () => {
   const warning = useCallback((message, duration) => addToast(message, 'warning', duration), [addToast]);
   const info = useCallback((message, duration) => addToast(message, 'info', duration), [addToast]);
 
+  const clearAll = useCallback(() => setToasts([]), []);
+
   return {
     toasts,
     addToast,
@@ -28,6 +30,7 @@ export const useToast = () => {
     success,
     error,
     warning,
-    info
+    info,
+    clearAll
   };
 };

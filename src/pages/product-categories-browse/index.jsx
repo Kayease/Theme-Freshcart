@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
+import SEO from '../../components/SEO';
 import Button from '../../components/ui/Button';
 import FilterChip from './components/FilterChip';
 import SortDropdown from './components/SortDropdown';
@@ -9,6 +10,7 @@ import FilterSidebar from './components/FilterSidebar';
 import ProductGrid from './components/ProductGrid';
 import CategoryBreadcrumb from './components/CategoryBreadcrumb';
 import Icon from '../../components/AppIcon';
+import productsData from '../../data/products.json';
 
 const ProductCategoriesBrowse = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -237,13 +239,33 @@ const ProductCategoriesBrowse = () => {
   ];
 
   useEffect(() => {
-    // Simulate loading
+    // Load products from our dataset instead of mock data
+    const loadProducts = () => {
+      try {
+        // Use the imported products data
+        const allProducts = productsData.products;
+        
+        const filtered = allProducts.filter(product => {
+          if (category && product.category !== category) return false;
+          if (subcategory && product.subcategory !== subcategory) return false;
+          return true;
+        });
+        
+        setProducts(filtered);
+        setFilteredProducts(filtered);
+      } catch (error) {
+        console.error("Error loading products:", error);
+        setProducts(mockProducts);
+        setFilteredProducts(mockProducts);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    // Short timeout to simulate API call
     setLoading(true);
-    setTimeout(() => {
-      setProducts(mockProducts);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    setTimeout(loadProducts, 300);
+  }, [category, subcategory]);
 
   useEffect(() => {
     let filtered = [...products];
@@ -422,6 +444,7 @@ const ProductCategoriesBrowse = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SEO title={`${subcategory || category || 'All Products'} | FreshCart`} description={`Browse ${subcategory || category || 'all products'} on FreshCart.`} />
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">

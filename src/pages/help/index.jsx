@@ -4,6 +4,7 @@ import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import Icon from '../../components/AppIcon';
+import SEO from '../../components/SEO';
 
 const HelpPage = () => {
   const [searchParams] = useSearchParams();
@@ -176,6 +177,7 @@ const HelpPage = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SEO title="Help Center | FreshCart" description="Find answers about orders, account, payments, and more." />
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
