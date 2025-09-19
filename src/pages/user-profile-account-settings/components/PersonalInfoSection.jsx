@@ -77,7 +77,7 @@ const PersonalInfoSection = () => {
     else if (ccDigits.length < 1 || ccDigits.length > 3) newErrors.phone = 'Invalid country code';
     else if (national.length < 6 || national.length > 14) newErrors.phone = 'Enter a valid phone number';
     else if (!/^\+\d{6,15}$/.test(e164)) newErrors.phone = 'Enter a valid phone number';
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -98,7 +98,7 @@ const PersonalInfoSection = () => {
       dateOfBirth: data.dateOfBirth,
       profileImage: profileImage || null,
     });
-    try { toast.success('Profile updated successfully'); } catch {}
+    try { toast.success('Profile updated successfully'); } catch { }
     // Mirror into session user
     try {
       const raw = localStorage.getItem('user');
@@ -107,8 +107,8 @@ const PersonalInfoSection = () => {
         const merged = { ...parsed, ...updated };
         localStorage.setItem('user', JSON.stringify(merged));
       }
-    } catch {}
-    try { window.dispatchEvent(new Event('profile:updated')); } catch {}
+    } catch { }
+    try { window.dispatchEvent(new Event('profile:updated')); } catch { }
     setOriginalEmail(data.email);
     setIsEditing(false);
   };
@@ -152,7 +152,7 @@ const PersonalInfoSection = () => {
   const onAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { try { toast.error('Please select an image file'); } catch {} return; }
+    if (!file.type.startsWith('image/')) { try { toast.error('Please select an image file'); } catch { } return; }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result;
@@ -166,9 +166,9 @@ const PersonalInfoSection = () => {
           parsed.profileImage = dataUrl;
           localStorage.setItem('user', JSON.stringify(parsed));
         }
-      } catch {}
-      try { toast.success('Profile picture updated'); } catch {}
-      try { window.dispatchEvent(new Event('profile:updated')); } catch {}
+      } catch { }
+      try { toast.success('Profile picture updated'); } catch { }
+      try { window.dispatchEvent(new Event('profile:updated')); } catch { }
     };
     reader.readAsDataURL(file);
   };
@@ -356,7 +356,7 @@ const PersonalInfoSection = () => {
                       setEvStep('otp');
                       setEvMessage('');
                       setEvBusy(false);
-                      try { toast.info('Demo OTP generated (shown in modal)'); } catch {}
+                      try { toast.info('Demo OTP generated (shown in modal)'); } catch { }
                     }, 800);
                   }} disabled={evBusy}>
                     {evBusy ? (
@@ -383,7 +383,7 @@ const PersonalInfoSection = () => {
                       setTimeout(() => {
                         setEvBusy(false);
                         setEvOpen(false);
-                        try { toast.success('Email verified successfully'); } catch {}
+                        try { toast.success('Email verified successfully'); } catch { }
                         // Commit the save with verified email
                         commitSave({ ...formData, email: evEmail });
                       }, 500);

@@ -41,11 +41,6 @@ const Header = () => {
       action: () => navigate('/user-profile-account-settings')
     },
     {
-      name: 'Settings',
-      icon: 'Settings',
-      action: () => navigate('/user-profile-account-settings?section=preferences')
-    },
-    {
       name: 'Help',
       icon: 'HelpCircle',
       action: () => navigate('/help')

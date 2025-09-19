@@ -33,8 +33,6 @@ const Footer = () => (
             <li><Link to="/help?section=contact" className="text-gray-300 hover:text-white transition-colors">Contact Us</Link></li>
             <li><Link to="/shipping" className="text-gray-300 hover:text-white transition-colors">Shipping Policy</Link></li>
             <li><Link to="/returns" className="text-gray-300 hover:text-white transition-colors">Returns & Refunds</Link></li>
-            <li><Link to="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
-            <li><Link to="/terms" className="text-gray-300 hover:text-white transition-colors">Terms of Service</Link></li>
           </ul>
         </div>
         <div>
@@ -49,7 +47,7 @@ const Footer = () => (
       </div>
       <div className="border-t border-gray-700 mt-8 pt-8 text-center">
         <p className="text-gray-300 text-sm font-caption">
-          © {new Date().getFullYear()} FreshCart. All rights reserved. 
+          © {new Date().getFullYear()} FreshCart. All rights reserved.
           <span className="mx-2">•</span>
           <Link to="/privacy" className="hover:text-white underline-offset-2 hover:underline">Privacy</Link>
           <span className="mx-2">•</span>

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { useAuth } from '../../../contexts/AuthContext';
 import emailhook from '../../../hooks/emailhook';
+import profileStorage from '../../../utils/profileStorage';
 
 const AccountSecuritySection = () => {
-  const [showPasswordForm, setShowPasswordForm] = useState(true);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const { user, changePassword, toast } = useAuth();
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -16,6 +17,7 @@ const AccountSecuritySection = () => {
   const [passwordErrors, setPasswordErrors] = useState({});
   const [showField, setShowField] = useState({ current: false, new: false, confirm: false });
   const [submitting, setSubmitting] = useState(false);
+  const [lastPasswordChange, setLastPasswordChange] = useState(null);
   // Password verification (email + OTP) modal state
   const [pvOpen, setPvOpen] = useState(false);
   const [pvStep, setPvStep] = useState('start'); // start | otp
@@ -25,7 +27,16 @@ const AccountSecuritySection = () => {
   const [pvMessage, setPvMessage] = useState('');
   const [pvBusy, setPvBusy] = useState(false);
 
+  // Load last password change date from local storage
+  useEffect(() => {
+    const profile = profileStorage.getStoredProfile();
+    if (profile?.lastPasswordChange) {
+      setLastPasswordChange(profile.lastPasswordChange);
+    }
+  }, []);
+
   const handlePasswordChange = (field, value) => {
+    setPasswordForm(prev => ({ ...prev, [field]: value }));
     if (passwordErrors[field]) {
       setPasswordErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -81,6 +92,13 @@ const AccountSecuritySection = () => {
               Password & Security
             </h2>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPasswordForm(!showPasswordForm)}
+          >
+            {showPasswordForm ? 'Hide' : 'Change Password'}
+          </Button>
         </div>
 
         {showPasswordForm && (
@@ -198,6 +216,38 @@ const AccountSecuritySection = () => {
           </div>
         )}
 
+        {/* Last Password Change Section */}
+        <div className="border border-border rounded-card p-4">
+          <div className="flex items-center space-x-3 mb-3">
+            <Icon name="Clock" size={18} className="text-text-secondary" />
+            <h3 className="text-base font-heading font-semibold text-text-primary">
+              Password History
+            </h3>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-text-secondary">
+              Last password change:
+            </p>
+            <p className="text-sm font-body-medium text-text-primary">
+              {lastPasswordChange
+                ? new Date(lastPasswordChange).toLocaleString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })
+                : 'Never changed'
+              }
+            </p>
+            {lastPasswordChange && (
+              <p className="text-xs text-text-secondary">
+                {Math.floor((new Date() - new Date(lastPasswordChange)) / (1000 * 60 * 60 * 24))} days ago
+              </p>
+            )}
+          </div>
+        </div>
+
       </div>
       {/* Password Verification Modal (Email + OTP) */}
       {pvOpen && (
@@ -263,6 +313,11 @@ const AccountSecuritySection = () => {
                       try {
                         const result = await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
                         if (result.success) {
+                          // Update last password change timestamp
+                          const now = new Date().toISOString();
+                          profileStorage.updateStoredProfile({ lastPasswordChange: now });
+                          setLastPasswordChange(now);
+
                           setPvBusy(false);
                           setPvOpen(false);
                           setShowPasswordForm(false);
