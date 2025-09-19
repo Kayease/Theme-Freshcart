@@ -223,7 +223,7 @@ const PaymentMethodsSection = () => {
     if (pendingAction.type === 'add') {
       setSubmitting(true);
       try {
-        if (paymentType === 'card') {
+    if (paymentType === 'card') {
           // Create Razorpay customer if not exists
           let customerId = paymentStorage.getRazorpayCustomerId();
           if (!customerId) {
@@ -247,15 +247,15 @@ const PaymentMethodsSection = () => {
           });
           if (!cardResult.success) throw new Error('Card creation failed');
           const newPaymentMethod = {
-            type: 'card',
+        type: 'card',
             cardType: getCardType(formData.cardNumber),
             lastFour: formData.cardNumber.replace(/\s/g, '').slice(-4),
             expiryMonth: formData.expiryMonth,
             expiryYear: formData.expiryYear,
             cardholderName: formData.cardholderName,
             razorpayCardId: cardResult.cardId,
-            isDefault: paymentMethods.length === 0
-          };
+        isDefault: paymentMethods.length === 0
+      };
           const addedMethod = paymentStorage.addStoredPaymentMethod(newPaymentMethod);
           if (!addedMethod) throw new Error('Failed to save payment method');
           // Make newly added method default and move to top
@@ -366,25 +366,25 @@ const PaymentMethodsSection = () => {
   return (
     <div className="space-y-6">
       {/* Payment Methods List */}
-      <div className="bg-surface border border-border rounded-card p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <Icon name="CreditCard" size={20} className="text-primary" />
-            <h2 className="text-lg font-heading font-semibold text-text-primary">
-              Payment Methods
-            </h2>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAddForm(true)}
-            className="flex items-center space-x-2"
-            disabled={!razorpayLoaded}
-          >
-            <Icon name="Plus" size={16} />
-            <span>Add Payment</span>
-          </Button>
+    <div className="bg-surface border border-border rounded-card p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <Icon name="CreditCard" size={20} className="text-primary" />
+          <h2 className="text-lg font-heading font-semibold text-text-primary">
+            Payment Methods
+          </h2>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowAddForm(true)}
+          className="flex items-center space-x-2"
+            disabled={!razorpayLoaded}
+        >
+          <Icon name="Plus" size={16} />
+          <span>Add Payment</span>
+        </Button>
+      </div>
 
         {!razorpayLoaded && (
           <div className="text-center py-4">
@@ -409,16 +409,16 @@ const PaymentMethodsSection = () => {
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {paymentMethods.map((method) => (
-              <div
-                key={method.id}
+      <div className="space-y-4">
+        {paymentMethods.map((method) => (
+          <div
+            key={method.id}
                 className={`border rounded-card p-4 ${method.isDefault ? 'border-primary bg-primary/5' : 'border-border'
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-8 bg-border rounded flex items-center justify-center">
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-8 bg-border rounded flex items-center justify-center">
                       {method.type === 'card' && (
                         <Icon name={getCardIcon(method.cardType)} size={20} className={getCardBrandColor(method.cardType)} />
                       )}
@@ -432,47 +432,47 @@ const PaymentMethodsSection = () => {
                         <Icon name="Banknote" size={20} className="text-text-secondary" />
                       )}
                       {method.type === 'wallet' && (
-                        <Icon name="Wallet" size={20} className="text-text-secondary" />
-                      )}
-                    </div>
-                    <div>
+                    <Icon name="Wallet" size={20} className="text-text-secondary" />
+                  )}
+                </div>
+                <div>
                       {method.type === 'card' && (
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-body font-medium text-text-primary capitalize">
-                              {method.cardType}
-                            </span>
-                            <span className="text-sm text-text-secondary">
-                              •••• {method.lastFour}
-                            </span>
-                            {method.isDefault && (
-                              <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
-                                Default
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-text-secondary">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-body font-medium text-text-primary capitalize">
+                          {method.cardType}
+                        </span>
+                        <span className="text-sm text-text-secondary">
+                          •••• {method.lastFour}
+                        </span>
+                        {method.isDefault && (
+                          <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-text-secondary">
                             {method.cardholderName} • Expires {method.expiryMonth}/{method.expiryYear}
-                          </p>
-                        </div>
+                      </p>
+                    </div>
                       )}
                       {method.type === 'paypal' && (
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-body font-medium text-text-primary">
-                              PayPal
-                            </span>
-                            {method.isDefault && (
-                              <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
-                                Default
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-text-secondary">
-                            {method.email}
-                          </p>
-                        </div>
-                      )}
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-body font-medium text-text-primary">
+                          PayPal
+                        </span>
+                        {method.isDefault && (
+                          <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-text-secondary">
+                        {method.email}
+                      </p>
+                    </div>
+                  )}
                       {method.type === 'upi' && (
                         <div>
                           <div className="flex items-center space-x-2">
@@ -521,34 +521,34 @@ const PaymentMethodsSection = () => {
                           </div>
                           <p className="text-sm text-text-secondary capitalize">
                             {method.walletProvider}
-                          </p>
-                        </div>
-                      )}
+                      </p>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {!method.isDefault && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSetDefaultPaymentMethod(method.id)}
-                        className="text-primary hover:bg-primary hover:text-primary-foreground"
-                      >
-                        Set Default
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeletePaymentMethod(method.id)}
-                      className="text-error hover:bg-error/10"
-                    >
-                      <Icon name="Trash2" size={16} />
-                    </Button>
-                  </div>
+                  )}
                 </div>
               </div>
-            ))}
+              <div className="flex items-center space-x-2">
+                {!method.isDefault && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSetDefaultPaymentMethod(method.id)}
+                        className="text-primary hover:bg-primary hover:text-primary-foreground"
+                  >
+                    Set Default
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeletePaymentMethod(method.id)}
+                  className="text-error hover:bg-error/10"
+                >
+                  <Icon name="Trash2" size={16} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
           </div>
         )}
       </div>
@@ -559,7 +559,7 @@ const PaymentMethodsSection = () => {
           <h3 className="text-base font-heading font-semibold text-text-primary mb-4">
             Add Payment Method
           </h3>
-
+          
           <div className="mb-4">
             <div className="flex items-center space-x-4">
               <button
@@ -567,7 +567,7 @@ const PaymentMethodsSection = () => {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-button border ${paymentType === 'card'
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-border text-text-secondary hover:border-primary hover:text-primary'
-                  }`}
+                }`}
               >
                 <Icon name="CreditCard" size={16} />
                 <span>Credit/Debit Card</span>
@@ -577,7 +577,7 @@ const PaymentMethodsSection = () => {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-button border ${paymentType === 'paypal'
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-border text-text-secondary hover:border-primary hover:text-primary'
-                  }`}
+                }`}
               >
                 <Icon name="Wallet" size={16} />
                 <span>PayPal</span>

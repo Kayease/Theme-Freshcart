@@ -20,7 +20,6 @@ const Checkout = lazy(() => import('pages/checkout'));
 const UserProfileAccountSettings = lazy(() =>
   import('pages/user-profile-account-settings')
 );
-const SearchResults = lazy(() => import('pages/search-results'));
 const WishlistSavedItems = lazy(() => import('pages/wishlist-saved-items'));
 const HelpPage = lazy(() => import('pages/help'));
 const SignIn = lazy(() => import('pages/auth/SignIn'));
@@ -77,7 +76,7 @@ const Routes = () => {
             path="/user-profile-account-settings"
             element={<UserProfileAccountSettings />}
           />
-          <Route path="/search-results" element={<SearchResults />} />
+          {/* Removed standalone search-results page; search goes to categories page */}
           <Route path="/wishlist-saved-items" element={<WishlistSavedItems />} />
           <Route path="/help" element={<HelpPage />} />
 

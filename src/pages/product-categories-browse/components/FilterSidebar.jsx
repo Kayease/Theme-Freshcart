@@ -7,14 +7,15 @@ const FilterSidebar = ({
   filters, 
   onFilterChange, 
   availableBrands = [], 
+  availableCategories = [],
   isMobile = false, 
   isOpen = false, 
   onClose = () => {} 
 }) => {
   const [expandedSections, setExpandedSections] = useState({
     price: true,
+    categories: true,
     brand: true,
-    dietary: true,
     rating: true,
     availability: true
   });
@@ -23,6 +24,7 @@ const FilterSidebar = ({
     min: filters.priceRange?.min || '',
     max: filters.priceRange?.max || ''
   });
+  const [priceError, setPriceError] = useState('');
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -32,8 +34,19 @@ const FilterSidebar = ({
   };
 
   const handlePriceChange = (type, value) => {
-    const newRange = { ...priceRange, [type]: value };
+    // sanitize to allow only numbers and dot
+    const cleaned = value.replace(/[^0-9.]/g, '');
+    const newRange = { ...priceRange, [type]: cleaned };
     setPriceRange(newRange);
+    // basic validation
+    const min = parseFloat(newRange.min);
+    const max = parseFloat(newRange.max);
+    if (newRange.min !== '' && isNaN(min)) { setPriceError('Enter a valid minimum price'); return; }
+    if (newRange.max !== '' && isNaN(max)) { setPriceError('Enter a valid maximum price'); return; }
+    if (!isNaN(min) && min < 0) { setPriceError('Minimum cannot be negative'); return; }
+    if (!isNaN(max) && max < 0) { setPriceError('Maximum cannot be negative'); return; }
+    if (!isNaN(min) && !isNaN(max) && min > max) { setPriceError('Min cannot be greater than Max'); return; }
+    setPriceError('');
     onFilterChange('priceRange', newRange);
   };
 
@@ -44,15 +57,6 @@ const FilterSidebar = ({
       : currentValues.filter(v => v !== value);
     onFilterChange(filterType, newValues);
   };
-
-  const dietaryOptions = [
-    { value: 'organic', label: 'Organic' },
-    { value: 'gluten-free', label: 'Gluten Free' },
-    { value: 'vegan', label: 'Vegan' },
-    { value: 'vegetarian', label: 'Vegetarian' },
-    { value: 'keto', label: 'Keto Friendly' },
-    { value: 'low-sodium', label: 'Low Sodium' }
-  ];
 
   const ratings = [5, 4, 3, 2, 1];
 
@@ -97,6 +101,23 @@ const FilterSidebar = ({
             className="text-sm"
           />
         </div>
+        {priceError && (
+          <p className="mt-2 text-xs text-error">{priceError}</p>
+        )}
+      </FilterSection>
+      {/* Categories */}
+      <FilterSection title="Categories" sectionKey="categories">
+        {availableCategories.map((cat) => (
+          <label key={cat} className="flex items-center space-x-2 cursor-pointer">
+            <Input
+              type="checkbox"
+              checked={(filters.categories || []).includes(cat)}
+              onChange={(e) => handleCheckboxChange('categories', cat, e.target.checked)}
+              className="w-4 h-4"
+            />
+            <span className="text-sm text-text-primary font-caption">{cat}</span>
+          </label>
+        ))}
       </FilterSection>
       {/* Brands */}
       <FilterSection title="Brands" sectionKey="brand">
@@ -109,20 +130,6 @@ const FilterSidebar = ({
               className="w-4 h-4"
             />
             <span className="text-sm text-text-primary font-caption">{brand}</span>
-          </label>
-        ))}
-      </FilterSection>
-      {/* Dietary Preferences */}
-      <FilterSection title="Dietary Preferences" sectionKey="dietary">
-        {dietaryOptions.map((option) => (
-          <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
-            <Input
-              type="checkbox"
-              checked={(filters.dietary || []).includes(option.value)}
-              onChange={(e) => handleCheckboxChange('dietary', option.value, e.target.checked)}
-              className="w-4 h-4"
-            />
-            <span className="text-sm text-text-primary font-caption">{option.label}</span>
           </label>
         ))}
       </FilterSection>

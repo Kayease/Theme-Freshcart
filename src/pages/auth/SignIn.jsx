@@ -6,7 +6,6 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Icon from '../../components/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
-import ToastContainer from '../../components/ui/ToastContainer';
 import SEO from 'components/SEO';
 import { getRememberedEmail, setRememberedEmail, getRegisteredUser, setRegisteredUser } from '../../utils/authStorage';
 
@@ -313,7 +312,7 @@ const SignIn = () => {
           </div>
         </div>
       )}
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+            {/* Toast container is mounted globally in AuthProvider now */}
     </div>
   );
 };

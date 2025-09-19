@@ -3,56 +3,64 @@
     {
       "id": 1,
       "name": "Organic Valley",
-      "logo": "/images/placeholder.jpg",
+      "logo": null,
+      "icon": "Milk",
       "description": "Premium organic dairy products",
       "featured": true
     },
     {
       "id": 2,
       "name": "Fresh Farms",
-      "logo": "/images/placeholder.jpg",
+      "logo": null,
+      "icon": "Leaf",
       "description": "Farm-fresh produce daily",
       "featured": true
     },
     {
       "id": 3,
       "name": "Ocean's Best",
-      "logo": "/images/placeholder.jpg",
+      "logo": null,
+      "icon": "Fish",
       "description": "Premium seafood selection",
       "featured": true
     },
     {
       "id": 4,
       "name": "Baker's Choice",
-      "logo": "/images/placeholder.jpg",
+      "logo": null,
+      "icon": "Bread",
       "description": "Artisan breads & pastries",
       "featured": true
     },
     {
       "id": 5,
       "name": "Green Garden",
-      "logo": "/images/placeholder.jpg",
+      "logo": null,
+      "icon": "Sprout",
       "description": "Organic vegetables & herbs",
       "featured": true
     },
     {
       "id": 6,
       "name": "Pure Pantry",
-      "logo": "/images/placeholder.jpg",
+      "logo": null,
+      "icon": "Jar",
       "description": "Premium pantry essentials",
       "featured": false
     },
     {
       "id": 7,
       "name": "Healthy Harvest",
-      "logo": "/images/placeholder.jpg",
+      "logo": null,
+      "icon": "Wheat",
       "description": "Wholesome grains and cereals",
       "featured": false
     },
     {
       "id": 8,
       "name": "Nature's Best",
-      "logo": "/images/placeholder.jpg",
+      "logo": null,
+      "icon": "Heart",
       "description": "Natural health foods",
       "featured": false
     }
@@ -119,8 +127,8 @@
       "image": "/images/products/milk.jpg",
       "rating": 4.8,
       "reviews": 120,
-      "stock": 50,
-      "inStock": true,
+      "stock": 0,
+      "inStock": false,
       "description": "Fresh organic whole milk from grass-fed cows"
     },
     {

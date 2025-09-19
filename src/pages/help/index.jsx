@@ -7,7 +7,6 @@ import Icon from '../../components/AppIcon';
 import SEO from '../../components/SEO';
 import emailhook from '../../hooks/emailhook';
 import { useAuth } from '../../contexts/AuthContext';
-import ToastContainer from '../../components/ui/ToastContainer';
 
 const HelpPage = () => {
   const [searchParams] = useSearchParams();
@@ -463,7 +462,7 @@ const HelpPage = () => {
       </main>
 
       <Footer />
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      {/* Toast container is mounted globally in AuthProvider now */}
     </div>
   );
 };

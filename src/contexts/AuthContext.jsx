@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 import profileStorage from '../utils/profileStorage';
+import ToastContainer from '../components/ui/ToastContainer';
 
 const AuthContext = createContext(null);
 
@@ -443,6 +444,8 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}
+      {/* Global toast container mounted once at root */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </AuthContext.Provider>
   );
 };

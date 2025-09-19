@@ -9,7 +9,6 @@ import SortDropdown from './components/SortDropdown';
 import FilterSidebar from './components/FilterSidebar';
 import ProductGrid from './components/ProductGrid';
 import CategoryBreadcrumb from './components/CategoryBreadcrumb';
-import Icon from '../../components/AppIcon';
 import productsData from '../../data/products.json';
 
 const ProductCategoriesBrowse = () => {
@@ -21,8 +20,8 @@ const ProductCategoriesBrowse = () => {
   const [currentSort, setCurrentSort] = useState('relevance');
   const [filters, setFilters] = useState({
     priceRange: { min: '', max: '' },
+    categories: [],
     brands: [],
-    dietary: [],
     rating: [],
     inStock: false
   });
@@ -30,213 +29,22 @@ const ProductCategoriesBrowse = () => {
   const category = searchParams.get('category') || '';
   const subcategory = searchParams.get('subcategory') || '';
 
-  // Mock product data
-  const mockProducts = [
-    {
-      id: 1,
-      name: "Fresh Organic Bananas",
-      price: 2.99,
-      originalPrice: 3.49,
-      image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400",
-      rating: 4.5,
-      reviewCount: 128,
-      unit: "per lb",
-      inStock: true,
-      isOrganic: true,
-      discount: 14,
-      brand: "Fresh Valley",
-      category: "Fruits",
-      subcategory: "Tropical Fruits",
-      isWishlisted: false
-    },
-    {
-      id: 2,
-      name: "Whole Grain Bread",
-      price: 3.49,
-      originalPrice: null,
-      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400",
-      rating: 4.2,
-      reviewCount: 89,
-      unit: "per loaf",
-      inStock: true,
-      isOrganic: false,
-      discount: 0,
-      brand: "Organic Farm",
-      category: "Bakery",
-      subcategory: "Bread",
-      isWishlisted: true
-    },
-    {
-      id: 3,
-      name: "Fresh Salmon Fillet",
-      price: 12.99,
-      originalPrice: 15.99,
-      image: "https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=400",
-      rating: 4.8,
-      reviewCount: 67,
-      unit: "per lb",
-      inStock: false,
-      isOrganic: false,
-      discount: 19,
-      brand: "Ocean Fresh",
-      category: "Seafood",
-      subcategory: "Fish",
-      isWishlisted: false
-    },
-    {
-      id: 4,
-      name: "Organic Baby Spinach",
-      price: 4.99,
-      originalPrice: null,
-      image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400",
-      rating: 4.6,
-      reviewCount: 156,
-      unit: "5 oz bag",
-      inStock: true,
-      isOrganic: true,
-      discount: 0,
-      brand: "Green Choice",
-      category: "Vegetables",
-      subcategory: "Leafy Greens",
-      isWishlisted: false
-    },
-    {
-      id: 5,
-      name: "Greek Yogurt Plain",
-      price: 5.49,
-      originalPrice: 6.99,
-      image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400",
-      rating: 4.4,
-      reviewCount: 203,
-      unit: "32 oz",
-      inStock: true,
-      isOrganic: false,
-      discount: 21,
-      brand: "Nature\'s Best",
-      category: "Dairy",
-      subcategory: "Yogurt",
-      isWishlisted: false
-    },
-    {
-      id: 6,
-      name: "Avocados - Hass",
-      price: 1.99,
-      originalPrice: null,
-      image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400",
-      rating: 4.3,
-      reviewCount: 94,
-      unit: "each",
-      inStock: true,
-      isOrganic: true,
-      discount: 0,
-      brand: "Farm Fresh",
-      category: "Fruits",
-      subcategory: "Tropical Fruits",
-      isWishlisted: true
-    },
-    {
-      id: 7,
-      name: "Free Range Eggs",
-      price: 4.99,
-      originalPrice: null,
-      image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400",
-      rating: 4.7,
-      reviewCount: 178,
-      unit: "dozen",
-      inStock: true,
-      isOrganic: false,
-      discount: 0,
-      brand: "Pure Harvest",
-      category: "Dairy",
-      subcategory: "Eggs",
-      isWishlisted: false
-    },
-    {
-      id: 8,
-      name: "Organic Quinoa",
-      price: 8.99,
-      originalPrice: 10.99,
-      image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400",
-      rating: 4.5,
-      reviewCount: 112,
-      unit: "2 lb bag",
-      inStock: true,
-      isOrganic: true,
-      discount: 18,
-      brand: "Healthy Living",
-      category: "Pantry",
-      subcategory: "Grains",
-      isWishlisted: false
-    },
-    {
-      id: 9,
-      name: "Fresh Strawberries",
-      price: 3.99,
-      originalPrice: null,
-      image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400",
-      rating: 4.2,
-      reviewCount: 87,
-      unit: "1 lb container",
-      inStock: true,
-      isOrganic: false,
-      discount: 0,
-      brand: "Garden Select",
-      category: "Fruits",
-      subcategory: "Berries",
-      isWishlisted: false
-    },
-    {
-      id: 10,
-      name: "Almond Milk Unsweetened",
-      price: 3.49,
-      originalPrice: 3.99,
-      image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400",
-      rating: 4.1,
-      reviewCount: 145,
-      unit: "64 fl oz",
-      inStock: false,
-      isOrganic: false,
-      discount: 13,
-      brand: "Pure Harvest",
-      category: "Dairy",
-      subcategory: "Plant-Based Milk",
-      isWishlisted: false
-    },
-    {
-      id: 11,
-      name: "Organic Chicken Breast",
-      price: 9.99,
-      originalPrice: 11.99,
-      image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400",
-      rating: 4.6,
-      reviewCount: 76,
-      unit: "per lb",
-      inStock: true,
-      isOrganic: true,
-      discount: 17,
-      brand: "Farm Fresh",
-      category: "Meat",
-      subcategory: "Poultry",
-      isWishlisted: false
-    },
-    {
-      id: 12,
-      name: "Bell Peppers Mixed",
-      price: 4.49,
-      originalPrice: null,
-      image: "https://images.unsplash.com/photo-1525607551862-4d0b24fa4b35?w=400",
-      rating: 4.4,
-      reviewCount: 98,
-      unit: "3 pack",
-      inStock: true,
-      isOrganic: false,
-      discount: 0,
-      brand: "Green Choice",
-      category: "Vegetables",
-      subcategory: "Peppers",
-      isWishlisted: false
-    }
-  ];
+  // Sync URL params (brand/category) into sidebar filters for auto-tick behavior
+  useEffect(() => {
+    const brandParam = (searchParams.get('brand') || '').trim();
+    const categoryParam = (searchParams.get('category') || '').trim();
+    setFilters(prev => {
+      const next = { ...prev };
+      if (brandParam && !prev.brands.includes(brandParam)) {
+        next.brands = [...prev.brands, brandParam];
+      }
+      if (categoryParam && !prev.categories.includes(categoryParam)) {
+        next.categories = [...prev.categories, categoryParam];
+      }
+      return next;
+    });
+  }, [searchParams]);
+
 
   useEffect(() => {
     // Load products from our dataset instead of mock data
@@ -280,6 +88,18 @@ const ProductCategoriesBrowse = () => {
       filtered = filtered.filter(product => product.subcategory === subcategory);
     }
 
+    // Search query from header
+    const q = (searchParams.get('q') || '').trim().toLowerCase();
+    if (q) {
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+    }
+
+    // Brand from URL (e.g., when clicking brand suggestion)
+    const brandParam = (searchParams.get('brand') || '').trim();
+    if (brandParam) {
+      filtered = filtered.filter(p => p.brand === brandParam);
+    }
+
     // Filter by price range
     if (filters.priceRange.min !== '') {
       filtered = filtered.filter(product => product.price >= parseFloat(filters.priceRange.min));
@@ -288,14 +108,14 @@ const ProductCategoriesBrowse = () => {
       filtered = filtered.filter(product => product.price <= parseFloat(filters.priceRange.max));
     }
 
+    // Filter by selected categories (multi)
+    if (filters.categories.length > 0) {
+      filtered = filtered.filter(product => filters.categories.includes(product.category));
+    }
+
     // Filter by brands
     if (filters.brands.length > 0) {
       filtered = filtered.filter(product => filters.brands.includes(product.brand));
-    }
-
-    // Filter by dietary preferences
-    if (filters.dietary.includes('organic')) {
-      filtered = filtered.filter(product => product.isOrganic);
     }
 
     // Filter by rating
@@ -332,7 +152,7 @@ const ProductCategoriesBrowse = () => {
     }
 
     setFilteredProducts(filtered);
-  }, [products, filters, currentSort, category, subcategory]);
+  }, [products, filters, currentSort, category, subcategory, searchParams]);
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prevFilters => ({
@@ -344,8 +164,8 @@ const ProductCategoriesBrowse = () => {
   const handleClearAllFilters = () => {
     setFilters({
       priceRange: { min: '', max: '' },
+      categories: [],
       brands: [],
-      dietary: [],
       rating: [],
       inStock: false
     });
@@ -370,12 +190,12 @@ const ProductCategoriesBrowse = () => {
       active.push({ type: 'price', value: priceLabel });
     }
 
-    filters.brands.forEach(brand => {
-      active.push({ type: 'brand', value: brand });
+    filters.categories.forEach(cat => {
+      active.push({ type: 'categories', value: cat });
     });
 
-    filters.dietary.forEach(diet => {
-      active.push({ type: 'dietary', value: diet });
+    filters.brands.forEach(brand => {
+      active.push({ type: 'brand', value: brand });
     });
 
     filters.rating.forEach(rating => {
@@ -415,10 +235,10 @@ const ProductCategoriesBrowse = () => {
           brands: prev.brands.filter(brand => brand !== value)
         }));
         break;
-      case 'dietary':
+      case 'categories':
         setFilters(prev => ({
           ...prev,
-          dietary: prev.dietary.filter(diet => diet !== value)
+          categories: prev.categories.filter(cat => cat !== value)
         }));
         break;
       case 'rating':
@@ -441,28 +261,30 @@ const ProductCategoriesBrowse = () => {
   const activeFilters = getActiveFilters();
   const hasActiveFilters = activeFilters.length > 0;
   const availableBrands = [...new Set(products.map(product => product.brand))];
+  const availableCategories = [...new Set(products.map(product => product.category))];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col w-full overflow-x-hidden">
       <SEO title={`${subcategory || category || 'All Products'} | FreshCart`} description={`Browse ${subcategory || category || 'all products'} on FreshCart.`} />
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
+      <main className="w-full max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 flex-grow">
         <CategoryBreadcrumb category={category} subcategory={subcategory} />
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 xl:gap-8">
           {/* Sidebar - Desktop */}
-          <div className="hidden lg:block w-64 flex-shrink-0">
+          <div className="hidden lg:block w-full max-w-[300px] xl:max-w-[340px] flex-shrink-0">
             <FilterSidebar
               filters={filters}
               onFilterChange={handleFilterChange}
               availableBrands={availableBrands}
+              availableCategories={availableCategories}
             />
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
               <h1 className="text-2xl font-heading font-heading-bold text-text-primary mb-4 sm:mb-0">
                 {subcategory || category || 'All Products'}
               </h1>
@@ -485,6 +307,8 @@ const ProductCategoriesBrowse = () => {
                 />
               </div>
             </div>
+
+
 
             {/* Active Filters */}
             {hasActiveFilters && (
@@ -524,10 +348,12 @@ const ProductCategoriesBrowse = () => {
         filters={filters}
         onFilterChange={handleFilterChange}
         availableBrands={availableBrands}
+        availableCategories={availableCategories}
         isMobile
         isOpen={isFilterSidebarOpen}
         onClose={() => setIsFilterSidebarOpen(false)}
       />
+      {/* Toast container is mounted globally in AuthProvider now */}
     </div>
   );
 };

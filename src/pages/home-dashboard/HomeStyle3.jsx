@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Icon from '../../components/AppIcon';
 import Footer from '../../components/ui/Footer';
-import ToastContainer from '../../components/ui/ToastContainer';
 import { useAuth } from '../../contexts/AuthContext';
 import { IMAGES } from '../../utils/imageMap';
 import productsData from '../../data/products.json';
@@ -221,7 +220,7 @@ const HomeStyle3 = () => {
       </section>
 
       <Footer />
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      {/* Toast container is mounted globally in AuthProvider now */}
     </div>
   );
 };

@@ -7,7 +7,6 @@ import FeaturedBrands from './components/FeaturedBrands';
 import PopularProducts from './components/PopularProducts';
 import RecentlyPurchased from './components/RecentlyPurchased';
 import Footer from '../../components/ui/Footer';
-import ToastContainer from '../../components/ui/ToastContainer';
 import { useAuth } from '../../contexts/AuthContext';
 import SEO from '../../components/SEO';
 
@@ -100,7 +99,7 @@ const HomeStyle1 = () => {
       </main>
 
       <Footer />
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      {/* Toast container is mounted globally in AuthProvider now */}
     </div>
   );
 };

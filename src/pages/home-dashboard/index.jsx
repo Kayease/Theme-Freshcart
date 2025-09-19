@@ -4,7 +4,6 @@ import HomeStyle2 from './HomeStyle2';
 import HomeStyle3 from './HomeStyle3';
 import HomeStyle4 from './HomeStyle4';
 import HomeStyleSelector from '../../components/HomeStyleSelector';
-import ToastContainer from '../../components/ui/ToastContainer';
 import { useToast } from '../../hooks/useToast';
 
 const HomeDashboard = () => {
@@ -47,7 +46,7 @@ const HomeDashboard = () => {
         currentStyle={currentStyle} 
         onStyleChange={setCurrentStyle} 
       />
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      {/* Toast container is mounted globally in AuthProvider now */}
     </>
   );
 };

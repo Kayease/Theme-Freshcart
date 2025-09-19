@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import productsData from '../../data/products.json';
 import Icon from '../AppIcon';
 
 const SearchWithAutocomplete = ({ className = '' }) => {
@@ -10,21 +11,19 @@ const SearchWithAutocomplete = ({ className = '' }) => {
   const inputRef = useRef();
   const navigate = useNavigate();
 
-  const mockSuggestions = [
-    { type: 'product', name: 'Organic Apples', category: 'Fruits' },
-    { type: 'product', name: 'Fresh Bananas', category: 'Fruits' },
-    { type: 'product', name: 'Whole Milk', category: 'Dairy' },
-    { type: 'category', name: 'Fresh Produce' },
-    { type: 'category', name: 'Dairy Products' },
-    { type: 'brand', name: 'Organic Valley' }
-  ];
+  const getSuggestions = (q) => {
+    const ql = q.toLowerCase();
+    const products = (productsData.products || []).filter(p => p.name.toLowerCase().includes(ql)).slice(0, 3).map(p => ({ type: 'product', name: p.name, category: p.category }));
+    const categories = Array.from(new Set((productsData.products || []).map(p => p.category)))
+      .filter(c => c.toLowerCase().includes(ql)).slice(0, 3).map(c => ({ type: 'category', name: c }));
+    const brands = (productsData.brands || []).filter(b => b.name.toLowerCase().includes(ql)).slice(0, 3).map(b => ({ type: 'brand', name: b.name }));
+    return { products, categories, brands };
+  };
 
   useEffect(() => {
     if (query.length > 1) {
-      const filtered = mockSuggestions.filter(item =>
-        item.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setSuggestions(filtered.slice(0, 6));
+      const { products, categories, brands } = getSuggestions(query);
+      setSuggestions([...products, ...categories, ...brands]);
       setIsOpen(true);
     } else {
       setSuggestions([]);
@@ -54,16 +53,18 @@ const SearchWithAutocomplete = ({ className = '' }) => {
 
   const handleSearch = () => {
     if (query.trim()) {
-      navigate(`/search-results?q=${encodeURIComponent(query)}`);
+      navigate(`/product-categories-browse?q=${encodeURIComponent(query)}`);
       setIsOpen(false);
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
     if (suggestion.type === 'category') {
-      navigate(`/product-categories-browse?category=${encodeURIComponent(suggestion.name)}`);
+      navigate(`/product-categories-browse?category=${encodeURIComponent(suggestion.name)}&q=`);
+    } else if (suggestion.type === 'brand') {
+      navigate(`/product-categories-browse?brand=${encodeURIComponent(suggestion.name)}&q=`);
     } else {
-      navigate(`/search-results?q=${encodeURIComponent(suggestion.name)}`);
+      navigate(`/product-categories-browse?q=${encodeURIComponent(suggestion.name)}`);
     }
     setQuery('');
     setIsOpen(false);
@@ -79,7 +80,8 @@ const SearchWithAutocomplete = ({ className = '' }) => {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Search products, categories..."
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          onFocus={() => { if (query.length > 1) setIsOpen(true); }}
         />
         <Icon
           name="Search"
@@ -89,31 +91,32 @@ const SearchWithAutocomplete = ({ className = '' }) => {
       </div>
 
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={index}
-              onClick={() => handleSuggestionClick(suggestion)}
-              className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 ${
-                index === selectedIndex ? 'bg-primary/10' : ''
-              }`}
-            >
-              <Icon
-                name={suggestion.type === 'category' ? 'Grid3X3' : suggestion.type === 'brand' ? 'Award' : 'Package'}
-                size={16}
-                className="text-gray-400"
-              />
-              <div>
-                <div className="font-medium text-gray-900">{suggestion.name}</div>
-                {suggestion.category && (
-                  <div className="text-sm text-gray-500">in {suggestion.category}</div>
-                )}
-              </div>
-              <div className="ml-auto">
-                <span className="text-xs text-gray-400 capitalize">{suggestion.type}</span>
-              </div>
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+          <div className="px-3 py-2 text-[12px] font-semibold text-gray-500">Products</div>
+          {suggestions.filter(s => s.type === 'product').map((s, index) => (
+            <button key={`p-${index}`} onClick={() => handleSuggestionClick(s)} className={`w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 ${index === selectedIndex ? 'bg-primary/10' : ''}`}>
+              {/* <Icon name="Package" size={16} className="text-gray-400" /> */}
+              <span className="font-medium text-sm text-gray-900">{s.name}</span>
+              <span className="ml-auto text-xs text-gray-400">in {s.category}</span>
             </button>
           ))}
+          <div className="px-3 py-2 text-xs font-semibold text-gray-500">Categories</div>
+          {suggestions.filter(s => s.type === 'category').map((s, index) => (
+            <button key={`c-${index}`} onClick={() => handleSuggestionClick(s)} className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3">
+              <Icon name="Grid3X3" size={16} className="text-gray-400" />
+              <span className="font-medium text-sm text-gray-900">{s.name}</span>
+            </button>
+          ))}
+          <div className="px-3 py-2 text-xs font-semibold text-gray-500">Brands</div>
+          {suggestions.filter(s => s.type === 'brand').map((s, index) => (
+            <button key={`b-${index}`} onClick={() => handleSuggestionClick(s)} className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3">
+              <Icon name="Award" size={16} className="text-gray-400" />
+              <span className="font-medium text-sm text-gray-900">{s.name}</span>
+            </button>
+          ))}
+          <div className="p-2 border-t border-gray-100">
+            <button onClick={handleSearch} className="w-full text-center text-sm font-medium text-primary hover:underline">View more results</button>
+          </div>
         </div>
       )}
     </div>

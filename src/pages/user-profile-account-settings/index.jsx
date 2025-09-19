@@ -5,7 +5,6 @@ import Breadcrumb from '../../components/ui/Breadcrumb';
 import Icon from '../../components/AppIcon';
 import profileStorage from '../../utils/profileStorage';
 import { useAuth } from '../../contexts/AuthContext';
-import ToastContainer from '../../components/ui/ToastContainer';
 import PersonalInfoSection from './components/PersonalInfoSection';
 import DeliveryAddressSection from './components/DeliveryAddressSection';
 import PaymentMethodsSection from './components/PaymentMethodsSection';
@@ -192,7 +191,7 @@ const UserProfileAccountSettings = () => {
           </div>
         </div>
       </main>
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      {/* Toast container is mounted globally in AuthProvider now */}
     </div>
   );
 };

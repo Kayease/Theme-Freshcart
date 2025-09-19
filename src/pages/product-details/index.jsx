@@ -146,10 +146,7 @@ const ProductDetails = () => {
     alert('Product added to cart successfully!');
   };
 
-  const handleAddToWishlist = (product, isAdding) => {
-    console.log(isAdding ? 'Adding to wishlist:' : 'Removing from wishlist:', product);
-    alert(isAdding ? 'Added to wishlist!' : 'Removed from wishlist!');
-  };
+
 
   const handleRelatedProductAddToCart = (product) => {
     console.log('Adding related product to cart:', product);
@@ -213,7 +210,6 @@ const ProductDetails = () => {
             <ProductActions 
               product={mockProduct}
               onAddToCart={handleAddToCart}
-              onAddToWishlist={handleAddToWishlist}
             />
           </div>
         </div>
@@ -250,7 +246,6 @@ const ProductDetails = () => {
           </div>
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => handleAddToWishlist(mockProduct, true)}
               className="p-3 border border-border rounded-lg hover:bg-gray-50 transition-smooth"
             >
               <Icon name="Heart" size={20} />

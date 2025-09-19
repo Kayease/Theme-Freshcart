@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Input from './Input';
+import SearchWithAutocomplete from './SearchWithAutocomplete';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Header = () => {
@@ -72,12 +73,7 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search-results?q=${encodeURIComponent(searchQuery)}`);
-    }
-  };
+  // SearchWithAutocomplete handles submission and dropdown; keep state for mobile toggle only
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -161,22 +157,9 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Search Bar - Desktop */}
+          {/* Search Bar - Desktop with autocomplete */}
           <div className="hidden lg:flex items-center flex-1 max-w-md mx-8" ref={searchRef}>
-            <form onSubmit={handleSearchSubmit} className="relative w-full">
-              <Input
-                type="search"
-                placeholder="Search for Products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full"
-              />
-              <Icon
-                name="Search"
-                size={18}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary"
-              />
-            </form>
+            <SearchWithAutocomplete className="w-full" />
           </div>
 
           {/* Right Side Actions */}
@@ -267,21 +250,7 @@ const Header = () => {
         {/* Mobile Search Bar */}
         {isSearchExpanded && (
           <div className="lg:hidden pb-4" ref={searchRef}>
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <Input
-                type="search"
-                placeholder="Search for Products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full"
-                autoFocus
-              />
-              <Icon
-                name="Search"
-                size={18}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary"
-              />
-            </form>
+            <SearchWithAutocomplete className="w-full" />
           </div>
         )}
       </div>
