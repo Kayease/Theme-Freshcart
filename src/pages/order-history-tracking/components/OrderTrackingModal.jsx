@@ -4,6 +4,7 @@ import Button from '../../../components/ui/Button';
 
 const OrderTrackingModal = ({ isOpen, onClose, orderId }) => {
   const [trackingData, setTrackingData] = useState(null);
+  const [error, setError] = useState('');
 
   // Mock tracking data
   const mockTrackingData = {
@@ -48,8 +49,14 @@ const OrderTrackingModal = ({ isOpen, onClose, orderId }) => {
 
   useEffect(() => {
     if (isOpen && orderId) {
-      // Simulate API call
+      setError('');
+      setTrackingData(null);
+      // Simulate API call with minimal validation
       setTimeout(() => {
+        if (!orderId) {
+          setError('Invalid order id.');
+          return;
+        }
         setTrackingData(mockTrackingData);
       }, 500);
     }
@@ -58,8 +65,8 @@ const OrderTrackingModal = ({ isOpen, onClose, orderId }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-modal p-4">
-      <div className="bg-surface rounded-card shadow-modal max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+      <div className="bg-surface rounded-card shadow-modal max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
@@ -89,6 +96,11 @@ const OrderTrackingModal = ({ isOpen, onClose, orderId }) => {
             </div>
           ) : (
             <div className="space-y-6">
+              {error && (
+                <div className="p-3 bg-error/10 border border-error/20 text-error rounded-card text-sm">
+                  {error}
+                </div>
+              )}
               {/* ETA Card */}
               <div className="bg-primary text-primary-foreground rounded-card p-4">
                 <div className="flex items-center space-x-3">
@@ -135,11 +147,16 @@ const OrderTrackingModal = ({ isOpen, onClose, orderId }) => {
                   Tracking Updates
                 </h3>
                 <div className="space-y-4">
-                  {trackingData.updates.map((update, index) => (
+                  {trackingData.updates.map((update, index) => {
+                    const status = (update.status || '').toLowerCase();
+                    let colorClass = 'bg-border text-text-secondary';
+                    if (status.includes('confirmed')) colorClass = 'bg-success text-success-foreground';
+                    if (status.includes('prepare')) colorClass = 'bg-warning text-warning-foreground';
+                    if (status.includes('out')) colorClass = 'bg-accent text-accent-foreground';
+                    if (index === 0) colorClass = 'bg-primary text-primary-foreground';
+                    return (
                     <div key={index} className="flex items-start space-x-4">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        index === 0 ? 'bg-primary text-primary-foreground' : 'bg-border text-text-secondary'
-                      }`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}>
                         <Icon name={update.icon} size={16} />
                       </div>
                       <div className="flex-1">
@@ -156,7 +173,7 @@ const OrderTrackingModal = ({ isOpen, onClose, orderId }) => {
                         </p>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             </div>
@@ -173,11 +190,13 @@ const OrderTrackingModal = ({ isOpen, onClose, orderId }) => {
           </Button>
           {trackingData && (
             <Button
-              variant="primary"
-              iconName="Phone"
+              variant="outline"
+              iconName="Clock"
               iconPosition="left"
+              disabled
+              title="Driver assignment pending"
             >
-              Contact Driver
+              Assigning driver soon
             </Button>
           )}
         </div>

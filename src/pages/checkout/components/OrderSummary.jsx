@@ -2,48 +2,9 @@ import React from 'react';
 import Image from '../../../components/AppImage';
 import Icon from '../../../components/AppIcon';
 
-const OrderSummary = ({ cartItems, pricing, deliveryFee, tip }) => {
-  const mockCartItems = [
-    {
-      id: 1,
-      name: 'Fresh Organic Bananas',
-      image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400',
-      price: 3.99,
-      quantity: 2,
-      unit: 'bunch',
-      category: 'Fruits'
-    },
-    {
-      id: 2,
-      name: 'Whole Milk',
-      image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400',
-      price: 4.49,
-      quantity: 1,
-      unit: 'gallon',
-      category: 'Dairy'
-    },
-    {
-      id: 3,
-      name: 'Fresh Bread Loaf',
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400',
-      price: 2.99,
-      quantity: 1,
-      unit: 'loaf',
-      category: 'Bakery'
-    },
-    {
-      id: 4,
-      name: 'Organic Spinach',
-      image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400',
-      price: 3.49,
-      quantity: 1,
-      unit: 'bag',
-      category: 'Vegetables'
-    }
-  ];
-
-  const items = cartItems || mockCartItems;
-  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+const OrderSummary = ({ cartItems, deliveryFee, tip }) => {
+  const items = Array.isArray(cartItems) ? cartItems : [];
+  const subtotal = items.reduce((sum, item) => sum + (Number(item.price ?? item.originalPrice ?? 0) * Number(item.quantity ?? 1)), 0);
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + tax + (deliveryFee || 0) + (tip || 0);
 
@@ -59,7 +20,7 @@ const OrderSummary = ({ cartItems, pricing, deliveryFee, tip }) => {
           <div key={item.id} className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-button overflow-hidden bg-border-light flex-shrink-0">
               <Image
-                src={item.image}
+                src={item.image || '/images/placeholder.jpg'}
                 alt={item.name}
                 className="w-full h-full object-cover"
               />
@@ -70,16 +31,16 @@ const OrderSummary = ({ cartItems, pricing, deliveryFee, tip }) => {
                 {item.name}
               </h4>
               <p className="text-sm text-text-secondary">
-                {item.quantity} {item.unit}
+                {Number(item.quantity ?? 1)} {item.unit || ''}
               </p>
             </div>
             
             <div className="text-right">
               <p className="font-data font-data-medium text-text-primary">
-                ${(item.price * item.quantity).toFixed(2)}
+                ${(Number(item.price ?? item.originalPrice ?? 0) * Number(item.quantity ?? 1)).toFixed(2)}
               </p>
               <p className="text-sm text-text-secondary">
-                ${item.price.toFixed(2)} each
+                ${Number(item.price ?? item.originalPrice ?? 0).toFixed(2)} each
               </p>
             </div>
           </div>
@@ -91,7 +52,7 @@ const OrderSummary = ({ cartItems, pricing, deliveryFee, tip }) => {
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-text-secondary font-caption">
-              Subtotal ({items.length} items)
+              Subtotal ({items.reduce((n, i) => n + Number(i.quantity ?? 1), 0)} items)
             </span>
             <span className="font-data font-data-medium text-text-primary">
               ${subtotal.toFixed(2)}
@@ -139,25 +100,7 @@ const OrderSummary = ({ cartItems, pricing, deliveryFee, tip }) => {
           </div>
         </div>
 
-        {/* Savings Info */}
-        <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-card">
-          <div className="flex items-center space-x-2">
-            <Icon name="Tag" size={16} className="text-success" />
-            <span className="text-sm text-success font-caption">
-              You saved $5.50 on this order!
-            </span>
-          </div>
-        </div>
-
-        {/* Estimated Delivery */}
-        <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-card">
-          <div className="flex items-center space-x-2">
-            <Icon name="Truck" size={16} className="text-primary" />
-            <span className="text-sm text-primary font-caption">
-              Estimated delivery: 45-60 minutes
-            </span>
-          </div>
-        </div>
+        {/* Notes moved out; summary stays focused on totals */}
       </div>
     </div>
   );

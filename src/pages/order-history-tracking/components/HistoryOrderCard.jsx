@@ -57,7 +57,7 @@ const HistoryOrderCard = ({ order, onReorder, onViewReceipt, onRateOrder }) => {
         </div>
         <div className="text-right">
           <p className="font-data font-data-medium text-lg text-text-primary">
-            ${order.total.toFixed(2)}
+            ${Number(order.total || 0).toFixed(2)}
           </p>
           <p className="text-sm text-text-secondary">{order.itemCount} items</p>
         </div>
@@ -65,16 +65,49 @@ const HistoryOrderCard = ({ order, onReorder, onViewReceipt, onRateOrder }) => {
 
       {/* Order Items Preview */}
       <div className="mb-4">
-        <div className="flex items-center space-x-3 overflow-x-auto pb-2">
-          {order.items.slice(0, 4).map((item, index) => (
-            <div key={index} className="flex-shrink-0 w-12 h-12 bg-border-light rounded-card overflow-hidden">
-              <Image
-                src={item.image}
-                alt={item.name}
-                className="w-full h-full object-cover"
-              />
+        <div className="pb-2">
+
+          <div className="mt-4 pt-4 border-t border-border">
+            {/* <div className=""> */}
+            {order.items.map((item, index) => (
+              <div key={index} className="flex items-center">
+                <div className="w-10 h-10 mr-2 bg-border-light rounded-card overflow-hidden flex-shrink-0">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-body font-body-medium text-text-primary">
+                    {item.name}
+                  </p>
+                  <p className="text-xs text-text-secondary">
+                    Qty: {item.quantity} × ${Number(item.price || 0).toFixed(2)}
+                  </p>
+                </div>
+                <div className="flex items-center">
+                  <p className="text-sm font-data font-data-medium text-text-primary">
+                    ${(Number(item.quantity || 1) * Number(item.price || 0)).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {/* </div> */}
+
+            <div className="mt-4 p-3 bg-border-light rounded-card">
+              <div className="flex items-start space-x-2">
+                <Icon name="MapPin" size={16} className="text-text-secondary mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-body font-body-medium text-text-primary">
+                    Delivered to:
+                  </p>
+                  <p className="text-sm text-text-secondary">{order.deliveryAddress}</p>
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
+
           {order.items.length > 4 && (
             <div className="flex-shrink-0 w-12 h-12 bg-border-light rounded-card flex items-center justify-center">
               <span className="text-xs font-data font-data-medium text-text-secondary">
@@ -155,7 +188,7 @@ const HistoryOrderCard = ({ order, onReorder, onViewReceipt, onRateOrder }) => {
         >
           Reorder
         </Button>
-        
+
         <Button
           variant="outline"
           onClick={() => onViewReceipt(order.id)}
@@ -165,67 +198,8 @@ const HistoryOrderCard = ({ order, onReorder, onViewReceipt, onRateOrder }) => {
         >
           Download Receipt
         </Button>
-        
-        <Button
-          variant="ghost"
-          onClick={() => setIsExpanded(!isExpanded)}
-          iconName={isExpanded ? "ChevronUp" : "ChevronDown"}
-          iconPosition="right"
-          className="flex-1"
-        >
-          {isExpanded ? 'Less Details' : 'More Details'}
-        </Button>
       </div>
 
-      {/* Expanded Details */}
-      {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-border">
-          <div className="space-y-3">
-            {order.items.map((item, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-border-light rounded-card overflow-hidden flex-shrink-0">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-body font-body-medium text-text-primary">
-                    {item.name}
-                  </p>
-                  <p className="text-xs text-text-secondary">
-                    Qty: {item.quantity} × ${item.price.toFixed(2)}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <p className="text-sm font-data font-data-medium text-text-primary">
-                    ${(item.quantity * item.price).toFixed(2)}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onReorder([item])}
-                    iconName="Plus"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-4 p-3 bg-border-light rounded-card">
-            <div className="flex items-start space-x-2">
-              <Icon name="MapPin" size={16} className="text-text-secondary mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-body font-body-medium text-text-primary">
-                  Delivered to:
-                </p>
-                <p className="text-sm text-text-secondary">{order.deliveryAddress}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

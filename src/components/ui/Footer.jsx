@@ -37,9 +37,9 @@ const Footer = () => (
         </div>
         <div>
           <h3 className="font-heading font-semibold mb-4">Contact Info</h3>
-          <div className="space-y-2 text-sm text-gray-300">
-            <p>📞 1-800-FRESH-99</p>
-            <p>✉️ support@freshcart.com</p>
+          <div className="space-y-2 text-sm text-gray-300 flex flex-col gap-2">
+            <a href="tel:1-800-FRESH-99" className="hover:text-white underline-offset-2 hover:underline">📞 1-800-FRESH-99</a>
+            <a href="mailto:support@freshcart.com" className="hover:text-white underline-offset-2 hover:underline">✉️ support@freshcart.com</a>
             <p>📍 123 Fresh Street, City, ST 12345</p>
             <p>🕒 Mon-Sun: 6AM - 11PM</p>
           </div>

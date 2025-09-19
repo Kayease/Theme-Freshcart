@@ -11,12 +11,16 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }) =>
   };
 
   const calculateItemTotal = () => {
-    const discountedPrice = item.originalPrice - (item.originalPrice * item.discount / 100);
-    return (discountedPrice * item.quantity).toFixed(2);
+    const unitPrice = Number(item.price ?? item.originalPrice ?? 0);
+    const discount = Number(item.discount ?? 0);
+    const discountedPrice = unitPrice - (unitPrice * discount / 100);
+    return (discountedPrice * Number(item.quantity ?? 1)).toFixed(2);
   };
 
   const getDiscountedPrice = () => {
-    return (item.originalPrice - (item.originalPrice * item.discount / 100)).toFixed(2);
+    const unitPrice = Number(item.price ?? item.originalPrice ?? 0);
+    const discount = Number(item.discount ?? 0);
+    return (unitPrice - (unitPrice * discount / 100)).toFixed(2);
   };
 
   return (
@@ -47,10 +51,10 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }) =>
                 <span className="font-heading font-heading-bold text-primary text-lg">
                   ${getDiscountedPrice()}
                 </span>
-                {item.discount > 0 && (
+                {Number(item.discount ?? 0) > 0 && (
                   <>
                     <span className="text-text-secondary text-sm line-through">
-                      ${item.originalPrice.toFixed(2)}
+                      ${Number(item.originalPrice ?? item.price ?? 0).toFixed(2)}
                     </span>
                     <span className="bg-success text-success-foreground text-xs px-2 py-1 rounded-full font-data font-data-medium">
                       {item.discount}% OFF

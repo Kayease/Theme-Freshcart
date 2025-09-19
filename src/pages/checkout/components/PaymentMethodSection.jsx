@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Icon from '../../../components/AppIcon';
@@ -14,8 +14,13 @@ const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
     saveCard: false
   });
   const { user, addPaymentMethod, deletePaymentMethod } = useAuth();
+  const [paymentMethods, setPaymentMethods] = useState([]);
 
-  const paymentMethods = user?.paymentMethods || [];
+  useEffect(() => {
+    setPaymentMethods(user?.paymentMethods || []);
+  }, [user]);
+
+  // Razorpay flow is handled in PlaceOrderSection; no script load here
 
   const handleInputChange = (field, value) => {
     setNewCard(prev => ({
@@ -34,6 +39,7 @@ const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
         isDefault: paymentMethods.length === 0
       };
       addPaymentMethod(cardToAdd);
+      setPaymentMethods(prev => [...prev, { id: Date.now().toString(), ...cardToAdd }]);
       
       setShowAddCard(false);
       setNewCard({
@@ -51,6 +57,7 @@ const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
       onPaymentSelect(null);
     }
     deletePaymentMethod(id);
+    setPaymentMethods(prev => prev.filter(p => p.id !== id));
   };
 
   const getPaymentIcon = (brand) => {
@@ -245,6 +252,9 @@ const PaymentMethodSection = ({ selectedPayment, onPaymentSelect }) => {
           </div>
         </div>
       )}
+
+      {/* Pay Now with Razorpay */}
+      {/* Razorpay button removed; handled in PlaceOrderSection */}
 
       {/* Security Notice */}
       <div className="flex items-center space-x-2 mt-4 p-3 bg-success/10 border border-success/20 rounded-card">

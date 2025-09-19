@@ -3,93 +3,145 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Icon from '../../../components/AppIcon';
+import { useAuth } from '../../../contexts/AuthContext';
 
-const PlaceOrderSection = ({ 
-  selectedAddress, 
-  selectedTimeSlot, 
-  selectedPayment, 
-  total, 
-  onPlaceOrder 
+const PlaceOrderSection = ({
+  selectedAddress,
+  selectedTimeSlot,
+  total,
+  onPlaceOrder
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useNavigate();
+  const { user, toast } = useAuth();
+
 
   const handlePlaceOrder = async () => {
-    if (!selectedAddress || !selectedTimeSlot || !selectedPayment || !acceptedTerms) {
+    console.log('[Checkout] Proceed to Payment clicked');
+    if (!selectedAddress || !selectedTimeSlot || !acceptedTerms) {
+      console.log('[Checkout] Blocked: missing selections', { selectedAddress: !!selectedAddress, selectedTimeSlot: !!selectedTimeSlot, acceptedTerms });
       return;
     }
 
+    if (total <= 0) {
+      toast?.error?.('Total must be greater than 0');
+      return;
+    }
     setIsProcessing(true);
-    
-    // Simulate order processing
-    setTimeout(() => {
+
+    // Minimal from-scratch Razorpay integration using global script
+    console.log('[Checkout] Total to charge (display):', total);
+    if (!window.Razorpay) {
+      console.error('[Checkout] window.Razorpay not available');
       setIsProcessing(false);
-      onPlaceOrder();
-      navigate('/order-history-tracking');
-    }, 3000);
+      toast?.error?.('Payment could not start. Refresh and try again.');
+      return;
+    }
+
+    const amountPaise = Math.round(total * 100);
+    console.log('[Checkout] Amount in paise:', amountPaise);
+    const options = {
+      key: 'rzp_test_6v1Ce186CCWa3y',
+      currency: 'INR',
+      amount: amountPaise,
+      name: 'FreshCart',
+      image: '/favicon.ico',
+      description: 'Order Payment',
+      config: {
+        display: {
+          blocks: {
+            upi_block: {
+              name: 'UPI',
+              instruments: [
+                { method: 'upi' },
+                { method: 'upi_qr' }
+              ]
+            }
+          },
+          sequence: ['block.upi_block'],
+          preferences: {
+            show_default_blocks: false
+          }
+        }
+      },
+      handler: function (response) {
+        console.log('[Checkout] Razorpay success handler response:', response);
+        onPlaceOrder({
+          payment: {
+            provider: 'razorpay',
+            paymentId: response?.razorpay_payment_id,
+            amount: amountPaise
+          }
+        });
+        navigate('/order-history-tracking');
+      },
+      modal: {
+        ondismiss: function () {
+          console.warn('[Checkout] Razorpay modal dismissed');
+          setIsProcessing(false);
+        }
+      },
+      prefill: {
+        name: user?.name || user?.fullName || 'FreshCart User',
+        email: user?.email || 'user@example.com'
+      },
+      theme: { color: '#16a34a' }
+    };
+
+    try {
+      console.log('[Checkout] Creating Razorpay instance with options:', { ...options, handler: !!options.handler, modal: !!options.modal });
+      const rzp = new window.Razorpay(options);
+      console.log('[Checkout] Opening Razorpay modal...');
+      rzp.open();
+    } catch (e) {
+      console.error('[Checkout] Error opening Razorpay:', e);
+      setIsProcessing(false);
+      toast?.error?.('Unable to open payment window.');
+    }
   };
 
-  const isOrderReady = selectedAddress && selectedTimeSlot && selectedPayment && acceptedTerms;
+  const isOrderReady = selectedAddress && selectedTimeSlot && acceptedTerms;
 
   return (
     <div className="bg-surface border border-border rounded-card p-6">
-      <h3 className="text-lg font-heading font-heading-semibold text-text-primary mb-6">
+      <h3 className="text-lg font-heading font-heading-semibold text-text-primary mb-6 hidden lg:block">
         Place Your Order
       </h3>
 
       {/* Order Validation */}
-      <div className="space-y-3 mb-6">
+      <div className="space-y-3 mb-6 hidden lg:block">
         <div className="flex items-center space-x-3">
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-            selectedAddress ? 'bg-success text-success-foreground' : 'bg-border text-text-secondary'
-          }`}>
+          <div className={`w-5 h-5 rounded-full flex items-center justify-center ${selectedAddress ? 'bg-success text-success-foreground' : 'bg-border text-text-secondary'
+            }`}>
             {selectedAddress ? (
               <Icon name="Check" size={12} />
             ) : (
               <Icon name="MapPin" size={12} />
             )}
           </div>
-          <span className={`text-sm font-caption ${
-            selectedAddress ? 'text-success' : 'text-text-secondary'
-          }`}>
+          <span className={`text-sm font-caption ${selectedAddress ? 'text-success' : 'text-text-secondary'
+            }`}>
             Delivery address selected
           </span>
         </div>
 
         <div className="flex items-center space-x-3">
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-            selectedTimeSlot ? 'bg-success text-success-foreground' : 'bg-border text-text-secondary'
-          }`}>
+          <div className={`w-5 h-5 rounded-full flex items-center justify-center ${selectedTimeSlot ? 'bg-success text-success-foreground' : 'bg-border text-text-secondary'
+            }`}>
             {selectedTimeSlot ? (
               <Icon name="Check" size={12} />
             ) : (
               <Icon name="Clock" size={12} />
             )}
           </div>
-          <span className={`text-sm font-caption ${
-            selectedTimeSlot ? 'text-success' : 'text-text-secondary'
-          }`}>
+          <span className={`text-sm font-caption ${selectedTimeSlot ? 'text-success' : 'text-text-secondary'
+            }`}>
             Delivery time selected
           </span>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-            selectedPayment ? 'bg-success text-success-foreground' : 'bg-border text-text-secondary'
-          }`}>
-            {selectedPayment ? (
-              <Icon name="Check" size={12} />
-            ) : (
-              <Icon name="CreditCard" size={12} />
-            )}
-          </div>
-          <span className={`text-sm font-caption ${
-            selectedPayment ? 'text-success' : 'text-text-secondary'
-          }`}>
-            Payment method selected
-          </span>
-        </div>
+
       </div>
 
       {/* Terms and Conditions */}
@@ -103,29 +155,28 @@ const PlaceOrderSection = ({
           />
           <div className="text-sm text-text-secondary font-caption">
             I agree to the{' '}
-            <button className="text-primary hover:underline">
+            <button onClick={() => navigate('/terms')} className="text-primary hover:underline">
               Terms of Service
             </button>
             {' '}and{' '}
-            <button className="text-primary hover:underline">
-              Privacy Policy
+            <button onClick={() => navigate('/privacy')} className="text-primary hover:underline">
+              Privacy Policy.
             </button>
-            . I understand that my order will be processed according to these terms.
           </div>
         </div>
       </div>
 
       {/* Security Notice */}
-      <div className="flex items-center space-x-2 mb-6 p-3 bg-success/10 border border-success/20 rounded-card">
+      <div className="flex items-center space-x-2 mb-6 p-3 bg-success/10 border border-success/20 rounded-card hidden lg:flex">
         <Icon name="Shield" size={16} className="text-success" />
         <p className="text-sm text-success font-caption">
           Your order is protected by SSL encryption
         </p>
       </div>
 
-      {/* Total and Place Order Button */}
-      <div className="border-t border-border pt-4">
-        <div className="flex justify-between items-center mb-4">
+      {/* Total and Proceed to Payment */}
+      <div className="border-t border-border pt-4 ">
+        <div className="flex justify-between items-center mb-4 hidden lg:block">
           <span className="text-lg font-body font-body-semibold text-text-primary">
             Total Amount
           </span>
@@ -140,10 +191,10 @@ const PlaceOrderSection = ({
           onClick={handlePlaceOrder}
           disabled={!isOrderReady || isProcessing}
           loading={isProcessing}
-          iconName={isProcessing ? undefined : "ShoppingBag"}
+          iconName={isProcessing ? undefined : "CreditCard"}
           iconPosition="left"
         >
-          {isProcessing ? 'Processing Order...' : 'Place Order'}
+          {isProcessing ? 'Processing Payment...' : 'Proceed to Payment'}
         </Button>
 
         {!isOrderReady && (

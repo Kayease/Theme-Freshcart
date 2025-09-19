@@ -2,22 +2,15 @@ import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const OrderSummary = ({ 
-  subtotal, 
-  discount, 
-  tax, 
-  deliveryFee, 
-  total, 
+const OrderSummary = ({
+  subtotal,
+  discount,
+  tax,
+  deliveryFee,
+  total,
   itemCount,
   onProceedToCheckout,
-  selectedDeliverySlot,
-  onDeliverySlotChange
 }) => {
-  const deliverySlots = [
-    { id: 'standard', label: 'Standard Delivery (2-3 hours)', price: 4.99, isExpress: false },
-    { id: 'express', label: 'Express Delivery (30-60 mins)', price: 9.99, isExpress: true },
-    { id: 'scheduled', label: 'Scheduled Delivery (Choose time)', price: 2.99, isExpress: false }
-  ];
 
   const formatPrice = (price) => {
     return price.toFixed(2);
@@ -72,50 +65,6 @@ const OrderSummary = ({
               ${formatPrice(total)}
             </span>
           </div>
-        </div>
-      </div>
-
-      {/* Delivery Options */}
-      <div className="mb-6">
-        <h3 className="font-body font-body-medium text-text-primary mb-3">
-          Delivery Options
-        </h3>
-        <div className="space-y-2">
-          {deliverySlots.map((slot) => (
-            <label
-              key={slot.id}
-              className={`flex items-center justify-between p-3 border rounded-button cursor-pointer transition-smooth ${
-                selectedDeliverySlot === slot.id
-                  ? 'border-primary bg-primary/5' :'border-border hover:border-primary/50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  name="deliverySlot"
-                  value={slot.id}
-                  checked={selectedDeliverySlot === slot.id}
-                  onChange={() => onDeliverySlotChange(slot.id)}
-                  className="text-primary focus:ring-primary"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-caption text-text-primary">
-                      {slot.label}
-                    </span>
-                    {slot.isExpress && (
-                      <span className="bg-accent text-accent-foreground text-xs px-2 py-1 rounded-full font-data font-data-medium">
-                        EXPRESS
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <span className="font-data font-data-medium text-text-primary">
-                ${formatPrice(slot.price)}
-              </span>
-            </label>
-          ))}
         </div>
       </div>
 

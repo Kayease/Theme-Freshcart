@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Icon from '../../../components/AppIcon';
@@ -17,9 +17,23 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
     zipCode: '',
     isDefault: false
   });
-  const { user, deleteAddress } = useAuth();
+  const { user, deleteAddress, updateAddress } = useAuth();
+  const [savedAddresses, setSavedAddresses] = useState([]);
 
-  const savedAddresses = user?.addresses || [];
+  useEffect(() => {
+    let list = user?.addresses || [];
+    if (!list || list.length === 0) {
+      try {
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          list = parsed?.addresses || [];
+        }
+      } catch { }
+    }
+    setSavedAddresses(list);
+
+  }, [user]);
 
   const handleInputChange = (field, value) => {
     setNewAddress(prev => ({
@@ -57,6 +71,16 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
     }
   };
 
+  const handleSetDefault = (id) => {
+    try {
+      // Mark selected as default and others as non-default
+      savedAddresses.forEach(addr => {
+        updateAddress(addr.id, { isDefault: addr.id === id });
+      });
+      onAddressSelect(savedAddresses.find(a => a.id === id) || null);
+    } catch { }
+  };
+
   const getAddressTypeIcon = (type) => {
     switch (type) {
       case 'home': return 'Home';
@@ -86,17 +110,15 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
         {savedAddresses.map((address) => (
           <div
             key={address.id}
-            className={`border rounded-card p-4 cursor-pointer transition-smooth ${
-              selectedAddress?.id === address.id
-                ? 'border-primary bg-primary/5' :'border-border hover:border-primary/50'
-            }`}
+            className={`border rounded-card p-4 cursor-pointer transition-smooth ${selectedAddress?.id === address.id
+                ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+              }`}
             onClick={() => onAddressSelect(address)}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-3">
-                <div className={`p-2 rounded-button ${
-                  selectedAddress?.id === address.id ? 'bg-primary text-primary-foreground' : 'bg-border-light'
-                }`}>
+                <div className={`p-2 rounded-button ${selectedAddress?.id === address.id ? 'bg-primary text-primary-foreground' : 'bg-border-light'
+                  }`}>
                   <Icon name={getAddressTypeIcon(address.type)} size={16} />
                 </div>
                 <div className="flex-1">
@@ -125,13 +147,30 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
                   </p>
                 </div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                selectedAddress?.id === address.id
-                  ? 'border-primary bg-primary' :'border-border'
-              }`}>
-                {selectedAddress?.id === address.id && (
-                  <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+              <div className="flex items-center gap-3">
+                {!address.isDefault && (
+                  <button
+                    type="button"
+                    className="text-sm text-primary hover:underline"
+                    onClick={(e) => { e.stopPropagation(); handleSetDefault(address.id); }}
+                  >
+                    Set Default
+                  </button>
                 )}
+                <button
+                  type="button"
+                  className="text-text-secondary hover:text-text-primary"
+                  onClick={(e) => { e.stopPropagation(); /* edit could open form prefilled in future */ }}
+                >
+                  <Icon name="Edit" size={14} />
+                </button>
+                <button
+                  type="button"
+                  className="text-error hover:text-error"
+                  onClick={(e) => { e.stopPropagation(); handleDeleteAddress(address.id); }}
+                >
+                  <Icon name="Trash2" size={14} />
+                </button>
               </div>
             </div>
           </div>
@@ -144,7 +183,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
           <h4 className="font-body font-body-medium text-text-primary mb-4">
             Add New Address
           </h4>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-caption text-text-secondary mb-2">
@@ -160,7 +199,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
                 <option value="other">Other</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-caption text-text-secondary mb-2">
                 Full Name *
@@ -173,7 +212,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-caption text-text-secondary mb-2">
                 Phone Number *
@@ -186,7 +225,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-caption text-text-secondary mb-2">
                 Address Line 1 *
@@ -199,7 +238,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-caption text-text-secondary mb-2">
                 Address Line 2
@@ -211,7 +250,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
                 onChange={(e) => handleInputChange('addressLine2', e.target.value)}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-caption text-text-secondary mb-2">
                 City *
@@ -224,7 +263,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-caption text-text-secondary mb-2">
                 State *
@@ -237,7 +276,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-caption text-text-secondary mb-2">
                 ZIP Code *
@@ -251,7 +290,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
               />
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2 mt-4">
             <Input
               type="checkbox"
@@ -262,7 +301,7 @@ const DeliveryAddressSection = ({ selectedAddress, onAddressSelect, onAddNewAddr
               Set as default address
             </label>
           </div>
-          
+
           <div className="flex items-center space-x-3 mt-6">
             <Button variant="primary" onClick={handleSaveAddress}>
               Save Address

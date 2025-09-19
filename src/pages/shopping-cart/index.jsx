@@ -7,19 +7,17 @@ import CartItem from './components/CartItem';
 import OrderSummary from './components/OrderSummary';
 import PromoCodeInput from './components/PromoCodeInput';
 import EmptyCart from './components/EmptyCart';
-import RecentlyViewed from './components/RecentlyViewed';
 import MinimumOrderProgress from './components/MinimumOrderProgress';
 import Footer from '../../components/ui/Footer';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ShoppingCart = () => {
   const navigate = useNavigate();
-  const { cart, updateCartItem, removeFromCart, addToCart, addToWishlist } = useAuth();
+  const { cart, updateCartItem, removeFromCart, addToWishlist } = useAuth();
 
   const [appliedPromoCode, setAppliedPromoCode] = useState('');
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [selectedDeliverySlot, setSelectedDeliverySlot] = useState('standard');
-  const [recentlyViewedItems, setRecentlyViewedItems] = useState([]);
 
   // Valid promo codes
   const validPromoCodes = {
@@ -31,9 +29,10 @@ const ShoppingCart = () => {
   // Calculate totals
   const calculateSubtotal = () => {
     return cart.reduce((total, item) => {
-      const discountedPrice =
-        item.originalPrice - (item.originalPrice * item.discount) / 100;
-      return total + discountedPrice * item.quantity;
+      const unitPrice = Number(item.price ?? item.originalPrice ?? 0);
+      const discount = Number(item.discount ?? 0);
+      const discountedPrice = unitPrice - (unitPrice * discount) / 100;
+      return total + discountedPrice * Number(item.quantity ?? 1);
     }, 0);
   };
 
@@ -43,8 +42,8 @@ const ShoppingCart = () => {
     selectedDeliverySlot === 'express'
       ? 9.99
       : selectedDeliverySlot === 'scheduled'
-      ? 2.99
-      : 4.99;
+        ? 2.99
+        : 4.99;
   const total = subtotal - promoDiscount + tax + deliveryFee;
   const itemCount = cart.reduce((count, item) => count + item.quantity, 0);
 
@@ -103,20 +102,12 @@ const ShoppingCart = () => {
   };
 
   const handleProceedToCheckout = () => {
-    if (cartItems.length === 0) return;
+    if (cart.length === 0) return;
     navigate('/checkout');
   };
 
   const handleStartShopping = () => {
     navigate('/product-categories-browse');
-  };
-
-  const handleAddToCart = productId => {
-    // Find product in recently viewed items and add to cart
-    const product = recentlyViewedItems?.find(item => item.id === productId);
-    if (product) {
-      addToCart(product, 1);
-    }
   };
 
   // Breadcrumb items
@@ -184,11 +175,6 @@ const ShoppingCart = () => {
                 appliedPromoCode={appliedPromoCode}
                 promoDiscount={promoDiscount}
               />
-
-              {/* Recently Viewed - Mobile */}
-              <div className="lg:hidden">
-                <RecentlyViewed onAddToCart={handleAddToCart} />
-              </div>
             </div>
 
             {/* Order Summary Section */}
@@ -205,11 +191,6 @@ const ShoppingCart = () => {
                 onDeliverySlotChange={handleDeliverySlotChange}
               />
             </div>
-          </div>
-
-          {/* Recently Viewed - Desktop */}
-          <div className="hidden lg:block">
-            <RecentlyViewed onAddToCart={handleAddToCart} />
           </div>
         </div>
       </div>

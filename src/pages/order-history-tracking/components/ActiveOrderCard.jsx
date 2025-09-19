@@ -6,17 +6,19 @@ import OrderStatusBadge from './OrderStatusBadge';
 
 const ActiveOrderCard = ({ order, onTrackOrder, onContactDriver }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const currency = (n) => `$${Number(n || 0).toFixed(2)}`;
 
   const getProgressPercentage = (status) => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 25;
       case 'preparing': return 50;
+      case 'processing': return 50; // treat processing as preparing
+      case 'proceeding': return 50; // alias (typo) just in case
       case 'out_for_delivery': return 75;
       case 'delivered': return 100;
       default: return 0;
     }
   };
-
   const progressSteps = [
     { key: 'confirmed', label: 'Confirmed', icon: 'CheckCircle2' },
     { key: 'preparing', label: 'Preparing', icon: 'Clock' },
@@ -26,13 +28,22 @@ const ActiveOrderCard = ({ order, onTrackOrder, onContactDriver }) => {
 
   const isStepCompleted = (stepKey) => {
     const stepOrder = ['confirmed', 'preparing', 'out_for_delivery', 'delivered'];
-    const currentIndex = stepOrder.indexOf(order.status.toLowerCase());
+    const currentStatus = (order.status || '').toLowerCase();
+    const currentIndex = stepOrder.indexOf(currentStatus);
     const stepIndex = stepOrder.indexOf(stepKey);
+    if (currentIndex === -1) {
+      // When status is unknown (e.g., 'processing'), show Confirmed as completed by default
+      return stepKey === 'confirmed';
+    }
     return stepIndex <= currentIndex;
   };
 
   const isStepActive = (stepKey) => {
-    return stepKey === order.status.toLowerCase();
+    const current = (order.status || '').toLowerCase();
+    if (current === 'processing' || current === 'proceeding') {
+      return stepKey === 'preparing';
+    }
+    return stepKey === current;
   };
 
   return (
@@ -59,7 +70,7 @@ const ActiveOrderCard = ({ order, onTrackOrder, onContactDriver }) => {
         </div>
         <div className="text-right">
           <p className="font-data font-data-medium text-lg text-text-primary">
-            ${order.total.toFixed(2)}
+            ${Number(order.total || 0).toFixed(2)}
           </p>
           <p className="text-sm text-text-secondary">{order.itemCount} items</p>
         </div>
@@ -70,51 +81,27 @@ const ActiveOrderCard = ({ order, onTrackOrder, onContactDriver }) => {
         <div className="flex justify-between items-center mb-2">
           {progressSteps.map((step, index) => (
             <div key={step.key} className="flex flex-col items-center flex-1">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 transition-smooth ${
-                isStepCompleted(step.key) 
-                  ? 'bg-primary text-primary-foreground' 
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 transition-smooth ${isStepCompleted(step.key)
+                  ? 'bg-primary text-primary-foreground'
                   : isStepActive(step.key)
-                  ? 'bg-accent text-accent-foreground'
-                  : 'bg-border text-text-secondary'
-              }`}>
+                    ? (step.key === 'preparing' ? 'bg-warning text-warning-foreground' : 'bg-accent text-accent-foreground')
+                    : 'bg-border text-text-secondary'
+                }`}>
                 <Icon name={step.icon} size={16} />
               </div>
-              <span className={`text-xs font-caption text-center ${
-                isStepCompleted(step.key) || isStepActive(step.key)
-                  ? 'text-text-primary' :'text-text-secondary'
-              }`}>
+              <span className={`text-xs font-caption text-center ${isStepCompleted(step.key) || isStepActive(step.key)
+                ? 'text-text-primary' : 'text-text-secondary'
+                }`}>
                 {step.label}
               </span>
             </div>
           ))}
         </div>
         <div className="relative h-2 bg-border-light rounded-full">
-          <div 
+          <div
             className="absolute top-0 left-0 h-full bg-primary rounded-full transition-smooth"
             style={{ width: `${getProgressPercentage(order.status)}%` }}
           />
-        </div>
-      </div>
-
-      {/* Order Items Preview */}
-      <div className="mb-4">
-        <div className="flex items-center space-x-3 overflow-x-auto pb-2">
-          {order.items.slice(0, 4).map((item, index) => (
-            <div key={index} className="flex-shrink-0 w-12 h-12 bg-border-light rounded-card overflow-hidden">
-              <Image
-                src={item.image}
-                alt={item.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-          {order.items.length > 4 && (
-            <div className="flex-shrink-0 w-12 h-12 bg-border-light rounded-card flex items-center justify-center">
-              <span className="text-xs font-data font-data-medium text-text-secondary">
-                +{order.items.length - 4}
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -142,7 +129,7 @@ const ActiveOrderCard = ({ order, onTrackOrder, onContactDriver }) => {
         >
           Track Order
         </Button>
-        
+
         {order.status.toLowerCase() === 'out_for_delivery' && order.driverInfo && (
           <Button
             variant="outline"
@@ -154,7 +141,7 @@ const ActiveOrderCard = ({ order, onTrackOrder, onContactDriver }) => {
             Contact Driver
           </Button>
         )}
-        
+
         <Button
           variant="ghost"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -174,7 +161,7 @@ const ActiveOrderCard = ({ order, onTrackOrder, onContactDriver }) => {
               <div key={index} className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-border-light rounded-card overflow-hidden flex-shrink-0">
                   <Image
-                    src={item.image}
+                    src={item.image || '/images/placeholder.jpg'}
                     alt={item.name}
                     className="w-full h-full object-cover"
                   />
@@ -184,16 +171,36 @@ const ActiveOrderCard = ({ order, onTrackOrder, onContactDriver }) => {
                     {item.name}
                   </p>
                   <p className="text-xs text-text-secondary">
-                    Qty: {item.quantity} × ${item.price.toFixed(2)}
+                    Qty: {Number(item.quantity || 1)} × {currency(item.price)}
                   </p>
                 </div>
                 <p className="text-sm font-data font-data-medium text-text-primary">
-                  ${(item.quantity * item.price).toFixed(2)}
+                  {currency(Number(item.quantity || 1) * Number(item.price || 0))}
                 </p>
               </div>
             ))}
           </div>
-          
+
+          {/* Billing Summary */}
+          <div className="mt-4 p-3 bg-border-light rounded-card">
+            {(() => {
+              const subtotal = (order.items || []).reduce((s, i) => s + Number(i.price || 0) * Number(i.quantity || 1), 0);
+              const tax = subtotal * 0.08;
+              const deliveryFee = Number(order.deliveryFee ?? order.timeSlot?.price ?? 0);
+              const tip = Number(order.tip || 0);
+              const total = Number(order.total ?? (subtotal + tax + deliveryFee + tip));
+              return (
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between"><span className="text-text-secondary">Subtotal</span><span className="text-text-primary">{currency(subtotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-text-secondary">Tax</span><span className="text-text-primary">{currency(tax)}</span></div>
+                  <div className="flex justify-between"><span className="text-text-secondary">Delivery Fee</span><span className="text-text-primary">{currency(deliveryFee)}</span></div>
+                  {tip > 0 && (<div className="flex justify-between"><span className="text-text-secondary">Tip</span><span className="text-text-primary">{currency(tip)}</span></div>)}
+                  <div className="border-t border-border pt-2 flex justify-between"><span className="font-body font-body-medium text-text-primary">Total</span><span className="font-data font-data-medium text-primary">{currency(total)}</span></div>
+                </div>
+              );
+            })()}
+          </div>
+
           {order.driverInfo && (
             <div className="mt-4 p-3 bg-border-light rounded-card">
               <div className="flex items-center space-x-3">

@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import SEO from '../../components/SEO';
 import CheckoutProgress from './components/CheckoutProgress';
 import DeliveryAddressSection from './components/DeliveryAddressSection';
 import DeliveryTimeSlot from './components/DeliveryTimeSlot';
-import PaymentMethodSection from './components/PaymentMethodSection';
 import OrderSummary from './components/OrderSummary';
 import DeliveryInstructions from './components/DeliveryInstructions';
 import PlaceOrderSection from './components/PlaceOrderSection';
 import Footer from '../../components/ui/Footer';
 import { useAuth } from '../../contexts/AuthContext';
 const CheckoutPage = () => {
-  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState([]);
   const { user, cartTotal, cart, addOrder, addAddress } = useAuth();
-  
+
   // Form state
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
@@ -27,9 +24,11 @@ const CheckoutPage = () => {
 
   // Initialize with default selections from user profile
   useEffect(() => {
-    const defaultAddress = user?.addresses?.[0] || null;
-    if (defaultAddress) {
-      setSelectedAddress(defaultAddress);
+    // Auto-select default address  from session
+    const addresses = user?.addresses || [];
+    const defAddr = addresses.find(a => a.isDefault) || addresses[0] || null;
+    if (defAddr) {
+      setSelectedAddress(defAddr);
       setCompletedSteps([1]);
       setCurrentStep(2);
     }
@@ -70,18 +69,32 @@ const CheckoutPage = () => {
     setSelectedTimeSlot(slot);
   };
 
-  const handlePaymentSelect = (payment) => {
-    setSelectedPayment(payment);
-  };
 
   const handlePlaceOrder = () => {
+    const items = cart.map(i => ({
+      id: i.id,
+      name: i.name,
+      price: Number(i.price ?? i.originalPrice ?? 0),
+      quantity: Number(i.quantity ?? 1),
+      image: i.image || '/images/placeholder.jpg'
+    }));
+    const subtotalCalc = items.reduce((s, it) => s + it.price * it.quantity, 0);
+    const taxCalc = subtotalCalc * 0.08;
+    const deliveryCalc = Number(selectedTimeSlot?.price || 0);
+    const totalCalc = subtotalCalc + taxCalc + deliveryCalc + Number(tip || 0);
+
     addOrder({
+      status: 'processing',
       address: selectedAddress,
       timeSlot: selectedTimeSlot,
       payment: selectedPayment,
       instructions: deliveryInstructions,
-      tip: tip,
-      items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity }))
+      tip: Number(tip || 0),
+      subtotal: subtotalCalc,
+      tax: taxCalc,
+      deliveryFee: deliveryCalc,
+      total: totalCalc,
+      items
     });
   };
 
@@ -101,10 +114,10 @@ const CheckoutPage = () => {
     <div className="min-h-screen bg-background">
       <SEO title="Checkout | FreshCart" description="Complete your order and schedule delivery." />
       <Header />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Breadcrumb customItems={breadcrumbItems} />
-        
+
         <div className="mb-6">
           <h1 className="text-3xl font-heading font-heading-bold text-text-primary mb-2">
             Checkout
@@ -114,9 +127,9 @@ const CheckoutPage = () => {
           </p>
         </div>
 
-        <CheckoutProgress 
-          currentStep={currentStep} 
-          completedSteps={completedSteps} 
+        <CheckoutProgress
+          currentStep={currentStep}
+          completedSteps={completedSteps}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -135,11 +148,6 @@ const CheckoutPage = () => {
               onSlotSelect={handleTimeSlotSelect}
             />
 
-            {/* Step 3: Payment Method */}
-            <PaymentMethodSection
-              selectedPayment={selectedPayment}
-              onPaymentSelect={handlePaymentSelect}
-            />
 
             {/* Step 4: Additional Information */}
             <DeliveryInstructions
@@ -154,18 +162,21 @@ const CheckoutPage = () => {
           <div className="space-y-6">
             {/* Order Summary */}
             <OrderSummary
+              cartItems={cart}
               deliveryFee={deliveryFee}
               tip={tip}
             />
 
-            {/* Place Order */}
-            <PlaceOrderSection
-              selectedAddress={selectedAddress}
-              selectedTimeSlot={selectedTimeSlot}
-              selectedPayment={selectedPayment}
-              total={total}
-              onPlaceOrder={handlePlaceOrder}
-            />
+            {/* Place Order (desktop/tablet only) */}
+            <div className="hidden lg:block">
+              <PlaceOrderSection
+                selectedAddress={selectedAddress}
+                selectedTimeSlot={selectedTimeSlot}
+                selectedPayment={selectedPayment}
+                total={total}
+                onPlaceOrder={handlePlaceOrder}
+              />
+            </div>
           </div>
         </div>
 

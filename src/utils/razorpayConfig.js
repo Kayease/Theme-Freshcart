@@ -39,6 +39,21 @@ export const createRazorpayInstance = (options) => {
   });
 };
 
+// Mock create order for Razorpay (client-only demo)
+export const createRazorpayOrder = async ({ amount, currency = RAZORPAY_CONFIG.currency, receipt }) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        success: true,
+        orderId: `order_${Date.now()}`,
+        amount,
+        currency,
+        receipt: receipt || `rcpt_${Math.floor(Math.random() * 100000)}`
+      });
+    }, 300);
+  });
+};
+
 // Card validation utilities
 export const validateCardNumber = (cardNumber) => {
   const cleaned = cardNumber.replace(/\s/g, '');
@@ -146,6 +161,7 @@ export default {
   RAZORPAY_CONFIG,
   loadRazorpayScript,
   createRazorpayInstance,
+  createRazorpayOrder,
   validateCardNumber,
   getCardType,
   formatCardNumber,
