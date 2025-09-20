@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import SEO from '../../components/SEO';
@@ -11,148 +11,302 @@ import ProductTabs from './components/ProductTabs';
 import RelatedProducts from './components/RelatedProducts';
 import CustomerReviews from './components/CustomerReviews';
 import Footer from '../../components/ui/Footer';
+import { useAuth } from '../../contexts/AuthContext';
 import { IMAGES } from '../../utils/imageMap';
+import productsData from '../../data/products.json';
+
 const ProductDetails = () => {
   const [searchParams] = useSearchParams();
-  const productId = searchParams.get('id') || '1';
+  const navigate = useNavigate();
+  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useAuth();
+  const productId = searchParams.get('id');
   const [isLoading, setIsLoading] = useState(true);
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [error, setError] = useState(null);
 
-  // Mock product data
-  const mockProduct = {
-    id: productId,
-    name: "Organic Gala Apples",
-    brand: "Fresh Farms",
+  // Function to transform product data to match the expected format
+  const transformProductData = (productData) => {
+    if (!productData) return null;
+
+    // Calculate discount - only show discount for some products to make it more realistic
+    const shouldShowDiscount = Math.random() > 0.6; // 40% chance of showing discount
+    const originalPrice = shouldShowDiscount ? productData.price * 1.15 : null; // 15% markup
+    const discount = originalPrice ? Math.round(((originalPrice - productData.price) / originalPrice) * 100) : 0;
+
+    return {
+      id: productData.id,
+      name: productData.name,
+      brand: productData.brand,
     price: {
-      current: 4.99,
-      original: 5.99,
-    },
-    discount: 17,
-    unit: "2 lbs bag",
-    priceUnit: "lb",
-    pricePerUnit: 2.50,
-    rating: 4.6,
-    reviewCount: 75,
-    availability: "In Stock",
-    stockCount: 25,
-    maxQuantity: 10,
-    origin: "Washington, USA",
-    storage: "Refrigerate",
-    expiryInfo: "Best before: 7 days from delivery",
-    images: [
-      IMAGES.PRODUCTS.APPLES,
-      IMAGES.PRODUCTS.HONEYCRISP_APPLES,
-      IMAGES.PRODUCTS.BANANAS,
-      IMAGES.PRODUCTS.APPLES
-    ],
-    highlights: [
-      "USDA Organic Certified",
-      "Non-GMO Project Verified",
-      "Locally sourced when possible",
-      "Perfect for snacking and baking",
-      "Rich in fiber and vitamin C"
-    ],
-    description: `Our premium organic Gala apples are hand-picked at peak ripeness to ensure maximum flavor and nutritional value. These crisp, sweet apples are perfect for snacking, lunch boxes, or your favorite recipes. Grown without synthetic pesticides or fertilizers, our organic apples are not only delicious but also better for you and the environment.\n\nGala apples are known for their distinctive sweet flavor with hints of vanilla and their satisfying crunch. They're an excellent source of dietary fiber, vitamin C, and antioxidants. Whether you're enjoying them fresh or using them in your favorite apple pie recipe, these organic Gala apples will exceed your expectations.`,
-    features: [
-      "Hand-picked at peak ripeness",
-      "Grown without synthetic pesticides",
-      "Perfect balance of sweet and tart",
-      "Excellent for both eating and cooking",
-      "Sustainably farmed"
-    ],
-    variants: [
-      { id: 1, name: "2 lbs", priceModifier: 0 },
-      { id: 2, name: "5 lbs", priceModifier: 2.50 },
-      { id: 3, name: "10 lbs", priceModifier: 4.99 }
-    ],
-    nutrition: [
-      { name: "Calories", amount: "52 kcal", dailyValue: "3%" },
-      { name: "Carbohydrates", amount: "14g", dailyValue: "5%" },
-      { name: "Dietary Fiber", amount: "2.4g", dailyValue: "10%" },
-      { name: "Sugars", amount: "10g", dailyValue: "-" },
-      { name: "Protein", amount: "0.3g", dailyValue: "1%" },
-      { name: "Fat", amount: "0.2g", dailyValue: "0%" },
-      { name: "Vitamin C", amount: "4.6mg", dailyValue: "8%" },
-      { name: "Potassium", amount: "107mg", dailyValue: "3%" }
-    ],
-    ingredients: [
-      "Organic Gala Apples"
-    ],
-    allergens: []
+        current: productData.price,
+        original: originalPrice,
+      },
+      discount: discount,
+      unit: getUnitForCategory(productData.category),
+      priceUnit: "each",
+      pricePerUnit: productData.price,
+      rating: productData.rating,
+      reviewCount: productData.reviews,
+      availability: productData.inStock ? "In Stock" : "Out of Stock",
+      stockCount: productData.stock,
+      maxQuantity: Math.min(productData.stock || 0, 10),
+      origin: getOriginForCategory(productData.category),
+      storage: getStorageForCategory(productData.category),
+      expiryInfo: getExpiryInfoForCategory(productData.category),
+      images: getProductImages(productData),
+      highlights: getHighlightsForProduct(productData),
+      description: getDescriptionForProduct(productData),
+      features: getFeaturesForProduct(productData),
+      variants: getVariantsForProduct(productData),
+      nutrition: getNutritionForProduct(productData),
+      ingredients: getIngredientsForProduct(productData),
+      allergens: getAllergensForProduct(productData),
+      category: productData.category,
+      categoryId: productData.categoryId,
+      brandId: productData.brandId
+    };
   };
 
-  // Mock related products
-  const mockRelatedProducts = [
-    {
-      id: 2,
-      name: "Organic Honeycrisp Apples",
-      image: IMAGES.PRODUCTS.HONEYCRISP_APPLES,
-      price: { current: 5.99, original: 6.99 },
-      discount: 14,
-      unit: "2 lbs bag",
-      rating: 4.8,
-      reviewCount: 92
-    },
-    {
-      id: 3,
-      name: "Organic Bananas",
-      image: IMAGES.PRODUCTS.BANANAS,
-      price: { current: 2.99, original: null },
-      unit: "2 lbs bunch",
-      rating: 4.5,
-      reviewCount: 156
-    },
-    {
-      id: 4,
-      name: "Organic Oranges",
-      image: IMAGES.PRODUCTS.ORANGES,
-      price: { current: 4.49, original: 4.99 },
-      discount: 10,
-      unit: "3 lbs bag",
-      rating: 4.4,
-      reviewCount: 68
-    },
-    {
-      id: 5,
-      name: "Organic Grapes",
-      image: IMAGES.PRODUCTS.GRAPES,
-      price: { current: 6.99, original: null },
-      unit: "2 lbs bag",
-      rating: 4.7,
-      reviewCount: 84
+  // Helper functions to generate dynamic content
+  const getUnitForCategory = (category) => {
+    const unitMap = {
+      "Dairy & Eggs": "1 unit",
+      "Fruits & Vegetables": "1 lb",
+      "Meat & Seafood": "1 lb",
+      "Bakery": "1 loaf",
+      "Pantry Staples": "1 bottle",
+      "Beverages": "1 bottle",
+      "Snacks": "1 bag",
+      "Frozen Foods": "1 package"
+    };
+    return unitMap[category] || "1 unit";
+  };
+
+  const getOriginForCategory = (category) => {
+    const originMap = {
+      "Dairy & Eggs": "Local Farm, USA",
+      "Fruits & Vegetables": "California, USA",
+      "Meat & Seafood": "Atlantic Coast, USA",
+      "Bakery": "Local Bakery, USA",
+      "Pantry Staples": "Italy",
+      "Beverages": "Various Origins",
+      "Snacks": "USA",
+      "Frozen Foods": "USA"
+    };
+    return originMap[category] || "USA";
+  };
+
+  const getStorageForCategory = (category) => {
+    const storageMap = {
+      "Dairy & Eggs": "Refrigerate",
+      "Fruits & Vegetables": "Room temperature or refrigerate",
+      "Meat & Seafood": "Refrigerate or freeze",
+      "Bakery": "Room temperature",
+      "Pantry Staples": "Room temperature",
+      "Beverages": "Room temperature or refrigerate",
+      "Snacks": "Room temperature",
+      "Frozen Foods": "Freeze"
+    };
+    return storageMap[category] || "Room temperature";
+  };
+
+  const getExpiryInfoForCategory = (category) => {
+    const expiryMap = {
+      "Dairy & Eggs": "Best before: 7 days from delivery",
+      "Fruits & Vegetables": "Best before: 5 days from delivery",
+      "Meat & Seafood": "Best before: 3 days from delivery",
+      "Bakery": "Best before: 3 days from delivery",
+      "Pantry Staples": "Best before: 1 year from delivery",
+      "Beverages": "Best before: 6 months from delivery",
+      "Snacks": "Best before: 3 months from delivery",
+      "Frozen Foods": "Best before: 6 months from delivery"
+    };
+    return expiryMap[category] || "Best before: 7 days from delivery";
+  };
+
+  const getProductImages = (productData) => {
+    const baseImage = productData.image || '/images/placeholder.jpg';
+    return [
+      baseImage,
+      baseImage, // For now, use the same image multiple times
+      baseImage,
+      baseImage
+    ];
+  };
+
+  const getHighlightsForProduct = (productData) => {
+    const highlights = [
+      "Premium Quality",
+      "Fresh Daily",
+      "Locally sourced when possible"
+    ];
+
+    if (productData.category === "Fruits & Vegetables") {
+      highlights.push("Rich in vitamins and minerals", "Perfect for healthy eating");
+    } else if (productData.category === "Dairy & Eggs") {
+      highlights.push("High in protein", "Fresh from the farm");
+    } else if (productData.category === "Meat & Seafood") {
+      highlights.push("High quality protein", "Freshly prepared");
     }
-  ];
 
-  // Custom breadcrumb items
-  const breadcrumbItems = [
-    { label: 'Home', path: '/home-dashboard', icon: 'Home' },
-    { label: 'Fresh Produce', path: '/product-categories-browse', icon: 'Apple' },
-    { label: 'Fruits', path: '/product-categories-browse?category=fruits', icon: 'Cherry' },
-    { label: mockProduct.name, path: `/product-details?id=${productId}`, icon: 'Package', isActive: true }
-  ];
+    return highlights;
+  };
 
+  const getDescriptionForProduct = (productData) => {
+    return `${productData.description}\n\nThis premium ${productData.name.toLowerCase()} from ${productData.brand} is carefully selected for quality and freshness. Perfect for your daily needs, this product offers excellent value and taste.`;
+  };
+
+  const getFeaturesForProduct = (productData) => {
+    const features = ["Premium quality", "Fresh daily"];
+    
+    if (productData.inStock) {
+      features.push("In stock and ready to ship");
+    }
+    
+    if (productData.rating >= 4.5) {
+      features.push("Highly rated by customers");
+    }
+
+    return features;
+  };
+
+  const getVariantsForProduct = (productData) => {
+    return [
+      { id: 1, name: "1 unit", priceModifier: 0 },
+      { id: 2, name: "2 units", priceModifier: parseFloat((productData.price * 0.9).toFixed(2)) },
+      { id: 3, name: "3 units", priceModifier: parseFloat((productData.price * 1.7).toFixed(2)) }
+    ];
+  };
+
+  const getNutritionForProduct = (productData) => {
+    return [
+      { name: "Calories", amount: "100 kcal", dailyValue: "5%" },
+      { name: "Protein", amount: "5g", dailyValue: "10%" },
+      { name: "Fat", amount: "2g", dailyValue: "3%" },
+      { name: "Carbohydrates", amount: "15g", dailyValue: "5%" },
+      { name: "Fiber", amount: "3g", dailyValue: "12%" }
+    ];
+  };
+
+  const getIngredientsForProduct = (productData) => {
+    return [productData.name];
+  };
+
+  const getAllergensForProduct = (productData) => {
+    const allergenMap = {
+      "Dairy & Eggs": ["Dairy", "Eggs"],
+      "Bakery": ["Gluten", "Wheat"],
+      "Meat & Seafood": ["Fish", "Shellfish"]
+    };
+    return allergenMap[productData.category] || [];
+  };
+
+  // Load product data
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    const loadProduct = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-    return () => clearTimeout(timer);
+        if (!productId) {
+          setError('Product ID is required');
+          return;
+        }
+
+        // Find product in the data
+        const foundProduct = productsData.products.find(p => p.id === parseInt(productId));
+        
+        if (!foundProduct) {
+          setError('Product not found');
+          return;
+        }
+
+        // Transform the product data
+        const transformedProduct = transformProductData(foundProduct);
+        setProduct(transformedProduct);
+
+        // Get related products (same category, different products)
+        const related = productsData.products
+          .filter(p => p.categoryId === foundProduct.categoryId && p.id !== foundProduct.id)
+          .slice(0, 4)
+          .map(p => {
+            const shouldShowDiscount = Math.random() > 0.7; // 30% chance of showing discount
+            const originalPrice = shouldShowDiscount ? p.price * 1.15 : null;
+            const discount = originalPrice ? Math.round(((originalPrice - p.price) / originalPrice) * 100) : 0;
+            
+            return {
+              id: p.id,
+              name: p.name,
+              image: p.image || '/images/placeholder.jpg',
+              price: { 
+                current: p.price, 
+                original: originalPrice
+              },
+              discount: discount,
+              unit: getUnitForCategory(p.category),
+              rating: p.rating,
+              reviewCount: p.reviews
+            };
+          });
+
+        setRelatedProducts(related);
+
+      } catch (err) {
+        console.error('Error loading product:', err);
+        setError('Failed to load product details');
+      } finally {
+      setIsLoading(false);
+      }
+    };
+
+    loadProduct();
   }, [productId]);
 
-  const handleAddToCart = async (cartData) => {
-    console.log('Adding to cart:', cartData);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    alert('Product added to cart successfully!');
+  // Generate dynamic breadcrumb items
+  const getBreadcrumbItems = () => {
+    if (!product) return [];
+    
+    return [
+      { label: 'Home', path: '/home-dashboard', icon: 'Home' },
+      { label: product.category, path: `/product-categories-browse?category=${encodeURIComponent(product.category)}`, icon: 'Grid' },
+      { label: product.name, path: `/product-details?id=${productId}`, icon: 'Package', isActive: true }
+    ];
   };
 
-
-
-  const handleRelatedProductAddToCart = (product) => {
-    console.log('Adding related product to cart:', product);
-    alert(`${product.name} added to cart!`);
+  const handleRelatedProductClick = (productId) => {
+    navigate(`/product-details?id=${productId}`);
   };
 
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <Icon name="AlertCircle" size={64} className="mx-auto text-error mb-4" />
+            <h1 className="text-2xl font-heading font-bold text-text-primary mb-2">
+              {error}
+            </h1>
+            <p className="text-text-secondary mb-6">
+              The product you're looking for could not be found.
+            </p>
+            <Link
+              to="/product-categories-browse"
+              className="inline-flex items-center space-x-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <Icon name="ArrowLeft" size={20} />
+              <span>Back to Products</span>
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -174,14 +328,42 @@ const ProductDetails = () => {
     );
   }
 
+  // No product found
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <Icon name="Package" size={64} className="mx-auto text-text-secondary mb-4" />
+            <h1 className="text-2xl font-heading font-bold text-text-primary mb-2">
+              Product Not Found
+            </h1>
+            <p className="text-text-secondary mb-6">
+              The product you're looking for could not be found.
+            </p>
+            <Link
+              to="/product-categories-browse"
+              className="inline-flex items-center space-x-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <Icon name="ArrowLeft" size={20} />
+              <span>Back to Products</span>
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${mockProduct.name} | FreshCart`} description={`Details, reviews and offers for ${mockProduct.name}.`} />
+      <SEO title={`${product.name} | FreshCart`} description={`Details, reviews and offers for ${product.name}.`} />
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Breadcrumb Navigation */}
-        <Breadcrumb customItems={breadcrumbItems} />
+        <Breadcrumb customItems={getBreadcrumbItems()} />
 
         {/* Back Button - Mobile */}
         <div className="lg:hidden mb-4">
@@ -199,36 +381,35 @@ const ProductDetails = () => {
           {/* Product Images */}
           <div className="lg:sticky lg:top-24 lg:self-start">
             <ProductImageGallery 
-              images={mockProduct.images} 
-              productName={mockProduct.name} 
+              images={product.images} 
+              productName={product.name} 
             />
           </div>
 
           {/* Product Information & Actions */}
           <div className="space-y-8">
-            <ProductInfo product={mockProduct} />
+            <ProductInfo product={product} />
             <ProductActions 
-              product={mockProduct}
-              onAddToCart={handleAddToCart}
+              product={product}
             />
           </div>
         </div>
 
         {/* Product Details Tabs */}
         <div className="mb-12">
-          <ProductTabs product={mockProduct} />
+          <ProductTabs product={product} />
         </div>
 
         {/* Customer Reviews */}
         <div className="mb-12">
-          <CustomerReviews product={mockProduct} />
+          <CustomerReviews product={product} />
         </div>
 
         {/* Related Products */}
         <div className="mb-12">
           <RelatedProducts 
-            products={mockRelatedProducts}
-            onAddToCart={handleRelatedProductAddToCart}
+            products={relatedProducts}
+            onProductClick={handleRelatedProductClick}
           />
         </div>
       </main>
@@ -238,20 +419,56 @@ const ProductDetails = () => {
         <div className="flex items-center justify-between space-x-4">
           <div className="flex-1">
             <p className="text-sm font-body text-text-secondary">
-              {mockProduct.name}
+              {product.name}
             </p>
             <p className="font-heading font-heading-bold text-lg text-primary">
-              ${mockProduct.price.current}
+              ${product.price.current.toFixed(2)}
             </p>
           </div>
           <div className="flex items-center space-x-2">
             <button
-              className="p-3 border border-border rounded-lg hover:bg-gray-50 transition-smooth"
+              className={`p-3 border rounded-lg transition-smooth ${
+                isInWishlist(product.id) 
+                  ? 'border-red-500 bg-red-50 text-red-500' 
+                  : 'border-border hover:bg-gray-50'
+              }`}
+              onClick={() => {
+                if (isInWishlist(product.id)) {
+                  removeFromWishlist(product.id);
+                } else {
+                  const wishlistItem = {
+                    id: product.id,
+                    name: product.name,
+                    price: product.price.current,
+                    image: product.images[0],
+                    brand: product.brand,
+                    category: product.category,
+                    unit: product.unit,
+                    inStock: product.availability === 'In Stock',
+                    rating: product.rating,
+                    reviewCount: product.reviewCount
+                  };
+                  addToWishlist(wishlistItem);
+                }
+              }}
             >
-              <Icon name="Heart" size={20} />
+              <Icon name="Heart" size={20} className={isInWishlist(product.id) ? 'fill-current' : ''} />
             </button>
             <button
-              onClick={() => handleAddToCart({ product: mockProduct, quantity: 1 })}
+              onClick={() => {
+                const cartItem = {
+                  id: product.id,
+                  name: product.name,
+                  price: product.price.current,
+                  image: product.images[0],
+                  brand: product.brand,
+                  category: product.category,
+                  unit: product.unit,
+                  quantity: 1,
+                  inStock: product.availability === 'In Stock'
+                };
+                addToCart(cartItem, 1);
+              }}
               className="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-body-medium hover:bg-primary/90 transition-smooth flex items-center space-x-2"
             >
               <Icon name="ShoppingCart" size={18} />

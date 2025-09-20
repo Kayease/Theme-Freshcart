@@ -190,8 +190,11 @@ const ProductCategoriesBrowse = () => {
       active.push({ type: 'price', value: priceLabel });
     }
 
+    // Only add categories from filters state that are NOT already in the URL category
     filters.categories.forEach(cat => {
-      active.push({ type: 'categories', value: cat });
+      if (cat !== category) { // Avoid duplication with URL category
+        active.push({ type: 'categories', value: cat });
+      }
     });
 
     filters.brands.forEach(brand => {
@@ -216,6 +219,11 @@ const ProductCategoriesBrowse = () => {
           params.delete('category');
           return params;
         });
+        // Also remove from filters state to keep them in sync
+        setFilters(prev => ({
+          ...prev,
+          categories: prev.categories.filter(cat => cat !== value)
+        }));
         break;
       case 'subcategory':
         setSearchParams(params => {

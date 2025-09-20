@@ -1,23 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const BulkActions = ({ 
   selectedCount, 
-  wishlists, 
-  currentWishlistId, 
   onBulkAddToCart, 
-  onBulkRemove, 
-  onBulkMoveToWishlist 
+  onBulkRemove
 }) => {
-  const [showMoveDropdown, setShowMoveDropdown] = useState(false);
-
-  const handleMoveToWishlist = (targetWishlistId) => {
-    onBulkMoveToWishlist(targetWishlistId);
-    setShowMoveDropdown(false);
-  };
-
-  const availableWishlists = wishlists.filter(w => w.id !== currentWishlistId);
 
   return (
     <div className="bg-primary text-primary-foreground rounded-card p-4 mb-6 shadow-card">
@@ -46,44 +35,6 @@ const BulkActions = ({
           >
             Add to Cart
           </Button>
-
-          <div className="relative">
-            <Button
-              variant="outline"
-              onClick={() => setShowMoveDropdown(!showMoveDropdown)}
-              iconName="Move"
-              iconPosition="left"
-              className="bg-primary-foreground text-primary hover:bg-primary-foreground hover:bg-opacity-90"
-            >
-              Move to
-            </Button>
-
-            {showMoveDropdown && (
-              <div className="absolute top-full right-0 mt-1 w-48 bg-surface border border-border rounded-card shadow-modal z-dropdown">
-                <div className="py-2">
-                  {availableWishlists.length > 0 ? (
-                    availableWishlists.map((wishlist) => (
-                      <button
-                        key={wishlist.id}
-                        onClick={() => handleMoveToWishlist(wishlist.id)}
-                        className="flex items-center w-full px-3 py-2 text-sm text-text-primary hover:bg-border-light transition-colors"
-                      >
-                        <Icon name="Heart" size={14} className="mr-2" />
-                        {wishlist.name}
-                        <span className="ml-auto text-xs text-text-secondary">
-                          ({wishlist.itemCount})
-                        </span>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-text-secondary">
-                      No other wishlists available
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
 
           <Button
             variant="outline"

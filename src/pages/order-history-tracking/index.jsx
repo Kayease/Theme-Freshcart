@@ -212,7 +212,7 @@ const OrderHistoryTracking = () => {
         if (dataUrl) {
           doc.addImage(dataUrl, 'PNG', 20, 14, 32, 32);
         }
-      } catch {}
+      } catch { }
       doc.setFontSize(18);
       doc.text('FreshCart', 60, 38);
       doc.setFontSize(14);

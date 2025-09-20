@@ -235,7 +235,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Cart functions (work for both guest and logged-in users)
-  const addToCart = (product, quantity = 1) => {
+  const addToCart = (productOrId, quantity = 1) => {
+    // Handle both product objects and product IDs
+    let product;
+    if (typeof productOrId === 'object') {
+      product = productOrId;
+    } else {
+      // If it's an ID, try to find the product from wishlist first, then products data
+      product = wishlist.find(item => item.id === productOrId);
+      if (!product) {
+        try {
+          const productsData = require('../data/products.json');
+          product = productsData.products.find(p => p.id === productOrId);
+          if (!product) {
+            // Fallback if product not found
+            product = { id: productOrId, name: 'Product', price: 0 };
+          }
+        } catch (error) {
+          // Fallback if products data not available
+          product = { id: productOrId, name: 'Product', price: 0 };
+        }
+      }
+    }
+    
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       
@@ -288,7 +310,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Wishlist functions (work for both guest and logged-in users)
-  const addToWishlist = (product) => {
+  const addToWishlist = (productOrId) => {
+    // Handle both product objects and product IDs
+    let product;
+    if (typeof productOrId === 'object') {
+      product = productOrId;
+    } else {
+      // If it's an ID, try to find the product from products data
+      try {
+        const productsData = require('../data/products.json');
+        product = productsData.products.find(p => p.id === productOrId);
+        if (!product) {
+          // Fallback if product not found
+          product = { id: productOrId, name: 'Product', price: 0 };
+        }
+      } catch (error) {
+        // Fallback if products data not available
+        product = { id: productOrId, name: 'Product', price: 0 };
+      }
+    }
+    
     setWishlist(prevWishlist => {
       const existingItem = prevWishlist.find(item => item.id === product.id);
       

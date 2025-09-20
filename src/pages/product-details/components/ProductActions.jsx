@@ -1,23 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import QuantitySelector from './QuantitySelector';
+import { useAuth } from '../../../contexts/AuthContext';
 
-const ProductActions = ({ product, onAddToCart, onAddToWishlist }) => {
+const ProductActions = ({ product }) => {
+  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useAuth();
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0] || null);
-  const [isInWishlist, setIsInWishlist] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+
+  // Check if product is in wishlist
+  const productInWishlist = isInWishlist(product.id);
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
     try {
-      await onAddToCart?.({
-        product,
+      // Calculate total price including variant modifier
+      const variantPrice = selectedVariant?.priceModifier || 0;
+      const totalPrice = product.price.current + variantPrice;
+      
+      // Create cart item with proper structure
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        price: totalPrice,
+        image: product.images[0],
+        brand: product.brand,
+        category: product.category,
+        unit: product.unit,
+        variant: selectedVariant?.name || '1 unit',
         quantity: selectedQuantity,
-        variant: selectedVariant
-      });
-      // Show success feedback
+        inStock: product.availability === 'In Stock'
+      };
+
+      addToCart(cartItem, selectedQuantity);
     } catch (error) {
       console.error('Error adding to cart:', error);
     } finally {
@@ -25,9 +43,31 @@ const ProductActions = ({ product, onAddToCart, onAddToWishlist }) => {
     }
   };
 
-  const handleWishlistToggle = () => {
-    setIsInWishlist(!isInWishlist);
-    onAddToWishlist?.(product, !isInWishlist);
+  const handleWishlistToggle = async () => {
+    setIsWishlistLoading(true);
+    try {
+      if (productInWishlist) {
+        removeFromWishlist(product.id);
+      } else {
+        const wishlistItem = {
+          id: product.id,
+          name: product.name,
+          price: product.price.current,
+          image: product.images[0],
+          brand: product.brand,
+          category: product.category,
+          unit: product.unit,
+          inStock: product.availability === 'In Stock',
+          rating: product.rating,
+          reviewCount: product.reviewCount
+        };
+        addToWishlist(wishlistItem);
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+    } finally {
+      setIsWishlistLoading(false);
+    }
   };
 
   const isOutOfStock = product.availability?.toLowerCase() === 'out of stock';
@@ -46,16 +86,15 @@ const ProductActions = ({ product, onAddToCart, onAddToWishlist }) => {
               <button
                 key={variant.id}
                 onClick={() => setSelectedVariant(variant)}
-                className={`px-4 py-2 rounded-lg border text-sm font-body-medium transition-smooth ${
-                  selectedVariant?.id === variant.id
+                className={`px-4 py-2 rounded-lg border text-sm font-body-medium transition-smooth ${selectedVariant?.id === variant.id
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border bg-surface text-text-primary hover:border-primary'
-                }`}
+                  }`}
               >
                 {variant.name}
-                {variant.priceModifier && (
+                {variant.priceModifier && variant.priceModifier > 0 && (
                   <span className="ml-1 text-xs">
-                    (+${variant.priceModifier})
+                    (+${variant.priceModifier.toFixed(2)})
                   </span>
                 )}
               </button>
@@ -126,9 +165,11 @@ const ProductActions = ({ product, onAddToCart, onAddToWishlist }) => {
             iconName="Heart"
             iconPosition="left"
             onClick={handleWishlistToggle}
-            className={isInWishlist ? 'text-red-500 border-red-500' : ''}
+            loading={isWishlistLoading}
+            disabled={isWishlistLoading}
+            className={productInWishlist ? 'hover:text-red-500 border-red-500 hover:bg-red-50 text-black' : ''}
           >
-            {isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            {productInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
           </Button>
 
           <Button
