@@ -32,7 +32,7 @@ const PopularProducts = () => {
             Most loved items by our customers
           </p>
         </div>
-        
+
         <button className="flex items-center space-x-2 text-primary font-body font-medium hover:underline transition-all duration-200">
           <span>View All</span>
           <Icon name="ArrowRight" size={16} />
@@ -48,13 +48,6 @@ const PopularProducts = () => {
             onToggleWishlist={handleToggleWishlist}
           />
         ))}
-      </div>
-
-      {/* Load More Button */}
-      <div className="text-center mt-8">
-        <button className="bg-border-light hover:bg-border text-text-primary font-body font-medium px-6 py-3 rounded-lg transition-colors duration-200">
-          Load More Products
-        </button>
       </div>
     </div>
   );

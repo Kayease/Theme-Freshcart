@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import HeroSlider from './components/HeroSlider';
@@ -7,12 +7,9 @@ import FeaturedBrands from './components/FeaturedBrands';
 import PopularProducts from './components/PopularProducts';
 import RecentlyPurchased from './components/RecentlyPurchased';
 import Footer from '../../components/ui/Footer';
-import { useAuth } from '../../contexts/AuthContext';
 import SEO from '../../components/SEO';
 
 const HomeStyle1 = () => {
-  const { toast } = useAuth();
-  const { toasts, removeToast } = toast;
 
   return (
     <div className="min-h-screen bg-background">

@@ -11,21 +11,50 @@ const HomeStyle4 = () => {
   const { addToCart, addToWishlist, toast } = useAuth();
   const { toasts, removeToast } = toast;
   const navigate = useNavigate();
+
   const deals = [
     { title: 'Flash Sale', discount: '50% OFF', product: 'Fresh Fruits', time: '2h 30m left', bg: 'bg-red-500' },
     { title: 'Daily Deal', discount: '30% OFF', product: 'Dairy Products', time: '12h left', bg: 'bg-blue-500' },
     { title: 'Weekend Special', discount: '25% OFF', product: 'Bakery Items', time: '1d 5h left', bg: 'bg-purple-500' }
   ];
 
-  const testimonials = [
-    { name: 'Sarah Johnson', text: 'Amazing quality and super fast delivery!', rating: 5, image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop' },
-    { name: 'Mike Chen', text: 'Best grocery shopping experience ever.', rating: 5, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
-    { name: 'Emma Davis', text: 'Fresh products, great prices, highly recommend!', rating: 5, image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' }
-  ];
-
   const popularProducts = useMemo(() => {
     const sorted = [...productsData.products].sort((a, b) => b.rating - a.rating);
     return sorted.slice(0, 4);
+  }, []);
+
+  // Get real categories from products data
+  const categories = useMemo(() => {
+    const categoryMap = new Map();
+
+    // Count products per category
+    productsData.products.forEach(product => {
+      const categoryName = product.category;
+      if (categoryMap.has(categoryName)) {
+        categoryMap.set(categoryName, categoryMap.get(categoryName) + 1);
+      } else {
+        categoryMap.set(categoryName, 1);
+      }
+    });
+
+    // Get category icons and colors
+    const categoryConfig = {
+      'Dairy & Eggs': { icon: '🥛', color: 'hover:bg-blue-50' },
+      'Fruits & Vegetables': { icon: '🍎', color: 'hover:bg-red-50' },
+      'Meat & Seafood': { icon: '🥩', color: 'hover:bg-pink-50' },
+      'Bakery': { icon: '🍞', color: 'hover:bg-yellow-50' },
+      'Pantry Staples': { icon: '🥫', color: 'hover:bg-orange-50' },
+      'Beverages': { icon: '🥤', color: 'hover:bg-purple-50' },
+      'Snacks': { icon: '🍿', color: 'hover:bg-indigo-50' },
+      'Frozen Foods': { icon: '🧊', color: 'hover:bg-cyan-50' }
+    };
+
+    return Array.from(categoryMap.entries()).map(([name, count]) => ({
+      name,
+      count: `${count}+`,
+      icon: categoryConfig[name]?.icon || '🛒',
+      color: categoryConfig[name]?.color || 'hover:bg-gray-50'
+    }));
   }, []);
 
   return (
@@ -49,10 +78,10 @@ const HomeStyle4 = () => {
                 Shop premium quality groceries at unbeatable prices. Free delivery on orders over $50.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <button className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-medium transition-all">
+                <button onClick={() => navigate('/product-categories-browse')} className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-medium transition-all">
                   Shop Now
                 </button>
-                <button className="border border-gray-300 hover:border-primary text-text-primary hover:text-primary px-8 py-3 rounded-lg font-medium transition-all">
+                <button onClick={() => navigate('/product-categories-browse')} className="border border-gray-300 hover:border-primary text-text-primary hover:text-primary px-8 py-3 rounded-lg font-medium transition-all">
                   View Deals
                 </button>
               </div>
@@ -112,7 +141,7 @@ const HomeStyle4 = () => {
                   <div className="text-lg mb-4">{deal.product}</div>
                   <div className="flex items-center justify-between">
                     <div className="text-sm opacity-90">⏰ {deal.time}</div>
-                    <button className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                    <button onClick={() => navigate('/product-categories-browse')} className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition-all">
                       Shop Now
                     </button>
                   </div>
@@ -127,15 +156,8 @@ const HomeStyle4 = () => {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl font-heading font-bold text-center mb-12">🛒 Shop by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {[
-              { name: 'Fruits', icon: '🍎', count: '120+', color: 'hover:bg-red-50' },
-              { name: 'Vegetables', icon: '🥕', count: '80+', color: 'hover:bg-green-50' },
-              { name: 'Dairy', icon: '🥛', count: '45+', color: 'hover:bg-blue-50' },
-              { name: 'Bakery', icon: '🍞', count: '60+', color: 'hover:bg-yellow-50' },
-              { name: 'Meat', icon: '🥩', count: '35+', color: 'hover:bg-pink-50' },
-              { name: 'Snacks', icon: '🍿', count: '90+', color: 'hover:bg-purple-50' }
-            ].map((category, index) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {categories.map((category, index) => (
               <div key={index} className={`bg-gray-50 ${category.color} rounded-xl p-4 text-center cursor-pointer transition-all hover:scale-105 shadow-sm hover:shadow-md`} onClick={() => navigate(`/product-categories-browse?category=${encodeURIComponent(category.name)}`)}>
                 <div className="text-3xl mb-2">{category.icon}</div>
                 <div className="font-medium text-sm mb-1">{category.name}</div>
@@ -154,9 +176,9 @@ const HomeStyle4 = () => {
             <p className="text-text-secondary">Most loved items by our customers</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularProducts.map((product) => (
+            {popularProducts.map((product, index) => (
               <div key={index} className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all group">
-                <div className="relative mb-4 cursor-pointer" onClick={() => navigate(`/product-details?id=${index + 1}&name=${encodeURIComponent(product.name)}`)}>
+                <div className="relative mb-4 cursor-pointer" onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}>
                   <img src={product.image} alt={product.name} className="w-full h-40 object-cover rounded-xl" />
                   <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
                     Popular
@@ -174,7 +196,7 @@ const HomeStyle4 = () => {
                     <Icon name="Heart" size={16} className="text-red-500" />
                   </button>
                 </div>
-                <h3 className="font-heading font-bold mb-2 cursor-pointer" onClick={() => navigate(`/product-details?id=${index + 1}&name=${encodeURIComponent(product.name)}`)}>{product.name}</h3>
+                <h3 className="font-heading font-bold mb-2 cursor-pointer" onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}>{product.name}</h3>
                 <div className="flex items-center mb-2">
                   <div className="flex text-yellow-400 mr-2">
                     {[...Array(5)].map((_, i) => (
@@ -212,55 +234,19 @@ const HomeStyle4 = () => {
               View All Orders
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {[
-              { name: 'Bananas', price: '$2.99', lastOrder: '3 days ago', image: IMAGES.PRODUCTS.BANANAS },
-              { name: 'Whole Milk', price: '$3.49', lastOrder: '1 week ago', image: IMAGES.PRODUCTS.MILK },
-              { name: 'Bread Loaf', price: '$2.99', lastOrder: '5 days ago', image: IMAGES.PRODUCTS.BREAD },
-              { name: 'Farm Eggs', price: '$4.99', lastOrder: '1 week ago', image: IMAGES.PRODUCTS.EGGS },
-              { name: 'Greek Yogurt', price: '$1.99', lastOrder: '4 days ago', image: IMAGES.PRODUCTS.YOGURT },
-              { name: 'Olive Oil', price: '$8.99', lastOrder: '2 weeks ago', image: IMAGES.PRODUCTS.OLIVE_OIL }
-            ].map((item, index) => (
+          <div className="grid grid-cols-2 md:grid-cols-4  gap-4">
+            {popularProducts.slice(0, 4).map((product, index) => (
               <div key={index} className="bg-white rounded-xl p-3 text-center hover:shadow-lg transition-all cursor-pointer group">
-                <img src={item.image} alt={item.name} className="w-full h-20 object-cover rounded-lg mb-2 cursor-pointer" onClick={() => navigate(`/product-details?id=${index + 200}&name=${encodeURIComponent(item.name)}`)} />
-                <h4 className="font-medium text-sm mb-1 cursor-pointer" onClick={() => navigate(`/product-details?id=${index + 200}&name=${encodeURIComponent(item.name)}`)}>{item.name}</h4>
-                <p className="text-primary font-bold text-sm mb-1">{item.price}</p>
-                <p className="text-xs text-text-secondary mb-2">{item.lastOrder}</p>
+                <img src={product.image} alt={product.name} className="w-full h-36 object-cover rounded-lg mb-2 cursor-pointer" onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)} />
+                <h4 className="font-medium text-sm mb-1 cursor-pointer" onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}>{product.name}</h4>
+                <p className="text-primary font-bold text-sm mb-1">${product.price.toFixed(2)}</p>
+                <p className="text-xs text-text-secondary mb-2">Recently viewed</p>
                 <button
-                  onClick={() => addToCart({ id: `reorder-${index}`, name: item.name, price: parseFloat(item.price.replace('$', '')), image: item.image })}
+                  onClick={() => addToCart(product, 1)}
                   className="w-full bg-accent hover:bg-accent/90 text-white text-xs py-1.5 rounded transition-all group-hover:scale-105"
                 >
                   Reorder
                 </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-heading font-bold text-center mb-12">What Our Customers Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center mb-4">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full mr-4"
-                  />
-                  <div>
-                    <div className="font-medium">{testimonial.name}</div>
-                    <div className="flex text-yellow-400">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Icon key={i} name="Star" size={14} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-text-secondary italic">"{testimonial.text}"</p>
               </div>
             ))}
           </div>

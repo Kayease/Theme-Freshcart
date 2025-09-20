@@ -18,32 +18,39 @@ const HomeStyle2 = () => {
     { icon: 'Headphones', title: '24/7 Support', desc: 'Always here to help' },
   ];
 
-  const categories = [
-    {
-      name: 'Fresh Fruits',
-      count: '120+ items',
-      image: IMAGES.CATEGORIES.FRESH_FRUITS,
-      color: 'bg-green-100',
-    },
-    {
-      name: 'Vegetables',
-      count: '80+ items',
-      image: IMAGES.CATEGORIES.VEGETABLES,
-      color: 'bg-orange-100',
-    },
-    {
-      name: 'Dairy Products',
-      count: '45+ items',
-      image: IMAGES.CATEGORIES.DAIRY,
-      color: 'bg-blue-100',
-    },
-    {
-      name: 'Bakery',
-      count: '60+ items',
-      image: IMAGES.PRODUCTS.BREAD,
-      color: 'bg-yellow-100',
-    },
-  ];
+  // Get real categories from products data
+  const categories = useMemo(() => {
+    const categoryMap = new Map();
+
+    // Count products per category
+    productsData.products.forEach(product => {
+      const categoryName = product.category;
+      if (categoryMap.has(categoryName)) {
+        categoryMap.set(categoryName, categoryMap.get(categoryName) + 1);
+      } else {
+        categoryMap.set(categoryName, 1);
+      }
+    });
+
+    // Get category icons and colors
+    const categoryConfig = {
+      'Dairy & Eggs': { icon: '🥛', color: 'bg-blue-50 hover:bg-blue-100' },
+      'Fruits & Vegetables': { icon: '🍎', color: 'bg-red-50 hover:bg-red-100' },
+      'Meat & Seafood': { icon: '🥩', color: 'bg-pink-50 hover:bg-pink-100' },
+      'Bakery': { icon: '🍞', color: 'bg-yellow-50 hover:bg-yellow-100' },
+      'Pantry Staples': { icon: '🥫', color: 'bg-orange-50 hover:bg-orange-100' },
+      'Beverages': { icon: '🥤', color: 'bg-purple-50 hover:bg-purple-100' },
+      'Snacks': { icon: '🍿', color: 'bg-indigo-50 hover:bg-indigo-100' },
+      'Frozen Foods': { icon: '🧊', color: 'bg-cyan-50 hover:bg-cyan-100' }
+    };
+
+    return Array.from(categoryMap.entries()).map(([name, count]) => ({
+      name,
+      count: `${count}+`,
+      icon: categoryConfig[name]?.icon || '🛒',
+      color: categoryConfig[name]?.color || 'bg-gray-50 hover:bg-gray-100'
+    }));
+  }, []);
 
   const popularProducts = useMemo(() => {
     const sorted = [...productsData.products].sort((a, b) => b.rating - a.rating);
@@ -117,11 +124,11 @@ const HomeStyle2 = () => {
               Discover fresh products in every category
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {categories.map((category, index) => (
               <div
                 key={index}
-                className="group cursor-pointer"
+                className={`${category.color} rounded-2xl p-6 text-center cursor-pointer transition-all hover:scale-105 shadow-sm hover:shadow-md`}
                 onClick={() =>
                   navigate(
                     `/product-categories-browse?category=${encodeURIComponent(
@@ -130,17 +137,9 @@ const HomeStyle2 = () => {
                   )
                 }
               >
-                <div
-                  className={`${category.color} rounded-2xl p-6 text-center hover:scale-105 transition-transform shadow-lg hover:shadow-xl`}
-                >
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-32 object-cover rounded-lg mb-4"
-                  />
-                  <h3 className="font-heading font-bold text-lg mb-2">{category.name}</h3>
-                  <p className="text-text-secondary text-sm">{category.count}</p>
-                </div>
+                <div className="text-4xl mb-3">{category.icon}</div>
+                <h3 className="font-heading font-bold text-sm mb-1">{category.name}</h3>
+                <p className="text-xs text-text-secondary">{category.count} items</p>
               </div>
             ))}
           </div>
@@ -160,7 +159,7 @@ const HomeStyle2 = () => {
             {popularProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 group"
+                className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all group"
               >
                 <div
                   className="relative mb-4 cursor-pointer"
@@ -175,14 +174,20 @@ const HomeStyle2 = () => {
                     alt={product.name}
                     className="w-full h-40 object-cover rounded-xl"
                   />
+                  <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                    Popular
+                  </span>
+                  <span className="absolute top-2 right-2 bg-accent text-white text-xs px-2 py-1 rounded-full">
+                    Featured
+                  </span>
                   <button
-                    className="absolute top-2 right-2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                    className="absolute top-10 right-2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
                     onClick={e => {
                       e.stopPropagation();
                       addToWishlist(product);
                     }}
                   >
-                    <Icon name="Heart" size={16} />
+                    <Icon name="Heart" size={16} className="text-red-500" />
                   </button>
                 </div>
                 <h3
@@ -212,15 +217,15 @@ const HomeStyle2 = () => {
                   </div>
                   <span className="text-xs text-text-secondary">({product.reviews})</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold text-primary">${product.price.toFixed(2)}</span>
-                  <button
-                    onClick={() => addToCart(product, 1)}
-                    className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm transition-all"
-                  >
-                    Add to Cart
-                  </button>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-lg font-bold text-primary">${product.price.toFixed(2)}</span>
                 </div>
+                <button
+                  onClick={() => addToCart(product, 1)}
+                  className="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-lg font-medium transition-all"
+                >
+                  Add to Cart
+                </button>
               </div>
             ))}
           </div>
@@ -235,35 +240,27 @@ const HomeStyle2 = () => {
             <p className="text-text-secondary text-lg">Items you've purchased recently</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {[
-              { name: 'Bananas', price: '$2.99', image: IMAGES.PRODUCTS.BANANAS },
-              { name: 'Milk', price: '$3.49', image: IMAGES.PRODUCTS.MILK },
-              { name: 'Bread', price: '$2.99', image: IMAGES.PRODUCTS.BREAD },
-              { name: 'Eggs', price: '$4.99', image: IMAGES.PRODUCTS.EGGS },
-              { name: 'Apples', price: '$3.99', image: IMAGES.PRODUCTS.APPLES },
-              { name: 'Yogurt', price: '$1.99', image: IMAGES.PRODUCTS.YOGURT },
-            ].map((item, index) => (
+            {popularProducts.slice(0, 6).map((product, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl p-3 text-center hover:shadow-lg transition-all cursor-pointer"
+                className="bg-white rounded-xl p-3 text-center hover:shadow-lg transition-all cursor-pointer group"
               >
                 <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-20 object-cover rounded-lg mb-2"
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-20 object-cover rounded-lg mb-2 cursor-pointer"
+                  onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}
                 />
-                <h4 className="font-medium text-sm mb-1">{item.name}</h4>
-                <p className="text-primary font-bold text-sm mb-2">{item.price}</p>
+                <h4
+                  className="font-medium text-sm mb-1 cursor-pointer"
+                  onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}
+                >
+                  {product.name}
+                </h4>
+                <p className="text-primary font-bold text-sm mb-2">${product.price.toFixed(2)}</p>
                 <button
-                  onClick={() =>
-                    addToCart({
-                      id: `buyagain-${index}`,
-                      name: item.name,
-                      price: parseFloat(item.price.replace('$', '')),
-                      image: item.image,
-                    })
-                  }
-                  className="w-full bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs py-1 rounded transition-all"
+                  onClick={() => addToCart(product, 1)}
+                  className="w-full bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs py-1 rounded transition-all group-hover:scale-105"
                 >
                   Add
                 </button>

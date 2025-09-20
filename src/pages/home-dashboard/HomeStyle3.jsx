@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Icon from '../../components/AppIcon';
@@ -6,11 +6,18 @@ import Footer from '../../components/ui/Footer';
 import { useAuth } from '../../contexts/AuthContext';
 import { IMAGES } from '../../utils/imageMap';
 import productsData from '../../data/products.json';
+import emailhook from '../../hooks/emailhook';
 
 const HomeStyle3 = () => {
   const { addToCart, addToWishlist, toast } = useAuth();
   const { toasts, removeToast } = toast;
   const navigate = useNavigate();
+
+  // Newsletter state
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
   const stats = [
     { number: '50K+', label: 'Happy Customers' },
     { number: '1000+', label: 'Products' },
@@ -22,6 +29,97 @@ const HomeStyle3 = () => {
     const sorted = [...productsData.products].sort((a, b) => b.rating - a.rating);
     return sorted.slice(0, 4);
   }, []);
+
+  // Get real categories from products data
+  const categories = useMemo(() => {
+    const categoryMap = new Map();
+
+    // Count products per category
+    productsData.products.forEach(product => {
+      const categoryName = product.category;
+      if (categoryMap.has(categoryName)) {
+        categoryMap.set(categoryName, categoryMap.get(categoryName) + 1);
+      } else {
+        categoryMap.set(categoryName, 1);
+      }
+    });
+
+    // Get category icons and colors
+    const categoryConfig = {
+      'Dairy & Eggs': { icon: '🥛', color: 'bg-blue-50 hover:bg-blue-100' },
+      'Fruits & Vegetables': { icon: '🍎', color: 'bg-red-50 hover:bg-red-100' },
+      'Meat & Seafood': { icon: '🥩', color: 'bg-pink-50 hover:bg-pink-100' },
+      'Bakery': { icon: '🍞', color: 'bg-yellow-50 hover:bg-yellow-100' },
+      'Pantry Staples': { icon: '🥫', color: 'bg-orange-50 hover:bg-orange-100' },
+      'Beverages': { icon: '🥤', color: 'bg-purple-50 hover:bg-purple-100' },
+      'Snacks': { icon: '🍿', color: 'bg-indigo-50 hover:bg-indigo-100' },
+      'Frozen Foods': { icon: '🧊', color: 'bg-cyan-50 hover:bg-cyan-100' }
+    };
+
+    return Array.from(categoryMap.entries()).map(([name, count]) => ({
+      name,
+      count: `${count}+`,
+      icon: categoryConfig[name]?.icon || '🛒',
+      color: categoryConfig[name]?.color || 'bg-gray-50 hover:bg-gray-100'
+    }));
+  }, []);
+
+  // Email validation
+  const validateEmail = (email) => {
+    if (!email.trim()) {
+      return 'Email is required';
+    }
+    if (!emailhook.validateEmailStrict(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  // Newsletter subscription
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setEmailError('');
+  };
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+
+    // Validate email
+    const error = validateEmail(email);
+    if (error) {
+      setEmailError(error);
+      return;
+    }
+
+    setIsSubscribing(true);
+
+    try {
+      // Check if email already exists in localStorage
+      const subscribedEmails = JSON.parse(localStorage.getItem('newsletterEmails') || '[]');
+
+      if (subscribedEmails.includes(email.toLowerCase())) {
+        toast.error('This email is already subscribed to our newsletter!');
+        return;
+      }
+
+      // Add email to localStorage
+      subscribedEmails.push(email.toLowerCase());
+      localStorage.setItem('newsletterEmails', JSON.stringify(subscribedEmails));
+
+      // Show success message
+      toast.success('Successfully subscribed to our newsletter!');
+
+      // Clear email field
+      setEmail('');
+
+    } catch (error) {
+      console.error('Error subscribing to newsletter:', error);
+      toast.error('Failed to subscribe. Please try again.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -45,12 +143,9 @@ const HomeStyle3 = () => {
               delivered fresh to your door with just a few clicks.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <button className="bg-primary hover:bg-primary/90 text-white px-12 py-4 rounded-lg font-medium text-lg transition-all shadow-lg hover:shadow-xl">
+              <button onClick={() => navigate('/product-categories-browse')} className="flex items-center text-text-primary font-medium text-lg transition-all border border-primary hover:bg-primary hover:text-white px-12 py-4 rounded-lg">
+                <Icon name="ShoppingCart" size={20} className="mr-2" />
                 Start Shopping
-              </button>
-              <button className="flex items-center text-text-primary hover:text-primary font-medium text-lg transition-all">
-                <Icon name="Play" size={20} className="mr-2" />
-                Watch Demo
               </button>
             </div>
           </div>
@@ -90,7 +185,7 @@ const HomeStyle3 = () => {
             {products.map((product, index) => (
               <div key={index} className="group cursor-pointer">
                 <div className="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                    <div className="relative mb-4" onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}>
+                  <div className="relative mb-4" onClick={() => navigate(`/product-details?id=${product.id}&name=${encodeURIComponent(product.name)}`)}>
                     <img
                       src={product.image}
                       alt={product.name}
@@ -138,7 +233,7 @@ const HomeStyle3 = () => {
                 Items you've purchased recently
               </p>
             </div>
-            <button className="text-primary hover:text-primary/80 font-medium">
+            <button onClick={() => navigate('/product-categories-browse')} className="text-primary hover:text-primary/80 font-medium">
               View All →
             </button>
           </div>
@@ -178,15 +273,8 @@ const HomeStyle3 = () => {
               Discover fresh products in every category
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {[
-              { name: 'Fresh Fruits', icon: '🍎', count: '120+', color: 'bg-red-50 hover:bg-red-100' },
-              { name: 'Vegetables', icon: '🥕', count: '80+', color: 'bg-green-50 hover:bg-green-100' },
-              { name: 'Dairy', icon: '🥛', count: '45+', color: 'bg-blue-50 hover:bg-blue-100' },
-              { name: 'Bakery', icon: '🍞', count: '60+', color: 'bg-yellow-50 hover:bg-yellow-100' },
-              { name: 'Meat & Fish', icon: '🥩', count: '35+', color: 'bg-pink-50 hover:bg-pink-100' },
-              { name: 'Beverages', icon: '🥤', count: '90+', color: 'bg-purple-50 hover:bg-purple-100' }
-            ].map((category, index) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {categories.map((category, index) => (
               <div key={index} className={`${category.color} rounded-2xl p-6 text-center cursor-pointer transition-all hover:scale-105`} onClick={() => navigate(`/product-categories-browse?category=${encodeURIComponent(category.name)}`)}>
                 <div className="text-4xl mb-3">{category.icon}</div>
                 <h3 className="font-heading font-bold text-sm mb-1">{category.name}</h3>
@@ -206,16 +294,36 @@ const HomeStyle3 = () => {
           <p className="text-xl mb-12 opacity-90">
             Get the latest updates on new products, exclusive deals, and seasonal offers
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-6 py-4 rounded-lg text-text-primary font-medium focus:outline-none focus:ring-2 focus:ring-white"
-            />
-            <button className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg font-medium transition-all">
-              Subscribe
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <div className="flex-1">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={handleEmailChange}
+                className={`w-full px-6 py-4 rounded-lg text-text-primary font-medium focus:outline-none focus:ring-2 focus:ring-white ${emailError ? 'border-2 border-red-400' : ''
+                  }`}
+                disabled={isSubscribing}
+              />
+              {emailError && (
+                <p className="text-red-300 text-sm mt-2 text-left">{emailError}</p>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={isSubscribing}
+              className="bg-accent hover:bg-accent/90 disabled:bg-accent/50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-lg font-medium transition-all flex items-center justify-center"
+            >
+              {isSubscribing ? (
+                <>
+                  <Icon name="Loader2" size={16} className="animate-spin mr-2" />
+                  Subscribing...
+                </>
+              ) : (
+                'Subscribe'
+              )}
             </button>
-          </div>
+          </form>
         </div>
       </section>
 
