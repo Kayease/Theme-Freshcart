@@ -99,47 +99,6 @@ const RecentlyPurchased = () => {
           </div>
         ))}
       </div>
-
-      {/* Quick Reorder Section */}
-      <div className="mt-8 bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-xl p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center shadow-lg">
-              <Icon name="RotateCcw" size={20} className="text-white" />
-            </div>
-            <div>
-              <h3 className="font-heading font-bold text-text-primary text-lg">
-                Quick Reorder
-              </h3>
-              <p className="text-sm text-text-secondary">
-                Reorder your essentials with one click
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              // Add all recent products to cart
-              recentProducts.forEach(product => {
-                handleAddToCart(product, 1);
-              });
-            }}
-            disabled={isLoading}
-            className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-          >
-            {isLoading ? (
-              <>
-                <Icon name="Loader2" size={16} className="animate-spin" />
-                <span>Adding...</span>
-              </>
-            ) : (
-              <>
-                <Icon name="ShoppingCart" size={16} />
-                <span>Reorder All</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

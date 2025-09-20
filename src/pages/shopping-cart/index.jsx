@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import SEO from '../../components/SEO';
+import Icon from '../../components/AppIcon';
 import CartItem from './components/CartItem';
 import OrderSummary from './components/OrderSummary';
 import PromoCodeInput from './components/PromoCodeInput';
 import EmptyCart from './components/EmptyCart';
 import MinimumOrderProgress from './components/MinimumOrderProgress';
+import CartBulkActions from './components/CartBulkActions';
 import Footer from '../../components/ui/Footer';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -18,6 +20,7 @@ const ShoppingCart = () => {
   const [appliedPromoCode, setAppliedPromoCode] = useState('');
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [selectedDeliverySlot, setSelectedDeliverySlot] = useState('standard');
+  const [selectedItems, setSelectedItems] = useState([]);
 
   // Valid promo codes
   const validPromoCodes = {
@@ -110,6 +113,40 @@ const ShoppingCart = () => {
     navigate('/product-categories-browse');
   };
 
+  // Bulk selection handlers
+  const handleSelectItem = (itemId) => {
+    setSelectedItems(prev =>
+      prev.includes(itemId)
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
+
+  const handleSelectAllItems = () => {
+    const allItemIds = cart.map(item => item.id);
+    setSelectedItems(
+      selectedItems.length === cart.length ? [] : allItemIds
+    );
+  };
+
+  const handleBulkMoveToWishlist = () => {
+    selectedItems.forEach(itemId => {
+      const item = cart.find(i => i.id === itemId);
+      if (item) {
+        addToWishlist(item);
+        removeFromCart(itemId);
+      }
+    });
+    setSelectedItems([]);
+  };
+
+  const handleBulkRemove = () => {
+    selectedItems.forEach(itemId => {
+      removeFromCart(itemId);
+    });
+    setSelectedItems([]);
+  };
+
   // Breadcrumb items
   const breadcrumbItems = [
     { label: 'Home', path: '/home-dashboard', icon: 'Home' },
@@ -143,12 +180,48 @@ const ShoppingCart = () => {
         <Breadcrumb customItems={breadcrumbItems} />
 
         <div className="mt-6">
-          <h1 className="font-heading font-heading-bold text-3xl text-text-primary mb-2">
-            Shopping Cart
-          </h1>
-          <p className="text-text-secondary font-caption mb-8">
-            Review your items and proceed to checkout
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="font-heading font-heading-bold text-3xl text-text-primary mb-2">
+                Shopping Cart
+              </h1>
+              <p className="text-text-secondary font-caption">
+                Review your items and proceed to checkout
+              </p>
+            </div>
+          </div>
+
+          {/* Select All Controls */}
+          {cart.length > 0 && (
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSelectAllItems}
+                  className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  <div className={`w-4 h-4 border border-border rounded ${selectedItems.length === cart.length
+                    ? 'bg-primary border-primary'
+                    : selectedItems.length > 0
+                      ? 'bg-primary border-primary opacity-50' : ''
+                    }`}>
+                    {selectedItems.length > 0 && (
+                      <Icon name="Check" size={12} className="text-white" />
+                    )}
+                  </div>
+                  Select All ({cart.length})
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Actions */}
+          {selectedItems.length > 0 && (
+            <CartBulkActions
+              selectedCount={selectedItems.length}
+              onBulkMoveToWishlist={handleBulkMoveToWishlist}
+              onBulkRemove={handleBulkRemove}
+            />
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items Section */}
@@ -162,6 +235,8 @@ const ShoppingCart = () => {
                   <CartItem
                     key={item.id}
                     item={item}
+                    isSelected={selectedItems.includes(item.id)}
+                    onSelectItem={handleSelectItem}
                     onUpdateQuantity={handleUpdateQuantity}
                     onRemoveItem={handleRemoveItem}
                     onMoveToWishlist={handleMoveToWishlist}

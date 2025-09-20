@@ -7,7 +7,6 @@ import HomeStyleSelector from '../../components/HomeStyleSelector';
 import { useToast } from '../../hooks/useToast';
 
 const HomeDashboard = () => {
-  const { toasts, removeToast } = useToast();
   const [currentStyle, setCurrentStyle] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const styleFromUrl = urlParams.get('style');

@@ -3,7 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
 
-const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }) => {
+const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist, isSelected, onSelectItem }) => {
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity >= 1) {
       onUpdateQuantity(item.id, newQuantity);
@@ -24,8 +24,25 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }) =>
   };
 
   return (
-    <div className="bg-surface border border-border rounded-card p-4 mb-4 shadow-card">
+    <div className={`bg-surface border rounded-card p-4 mb-4 shadow-card ${isSelected ? 'border-primary bg-primary/5' : 'border-border'}`}>
       <div className="flex flex-col sm:flex-row gap-4">
+        {/* Selection Checkbox */}
+        <div className="flex items-start">
+          <button
+            onClick={() => onSelectItem(item.id)}
+            className="flex items-center justify-center w-5 h-5 mt-1"
+          >
+            <div className={`w-4 h-4 border rounded ${isSelected
+              ? 'bg-primary border-primary'
+              : 'border-border hover:border-primary'
+            }`}>
+              {isSelected && (
+                <Icon name="Check" size={12} className="text-white" />
+              )}
+            </div>
+          </button>
+        </div>
+
         {/* Product Image */}
         <div className="flex-shrink-0">
           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-card overflow-hidden bg-border-light">

@@ -9,6 +9,7 @@ const SearchWithAutocomplete = ({ className = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef();
+  const containerRef = useRef();
   const navigate = useNavigate();
 
   const getSuggestions = (q) => {
@@ -30,6 +31,24 @@ const SearchWithAutocomplete = ({ className = '' }) => {
       setIsOpen(false);
     }
   }, [query]);
+
+  // Click outside detection
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setSelectedIndex(-1);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
@@ -71,7 +90,7 @@ const SearchWithAutocomplete = ({ className = '' }) => {
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div ref={containerRef} className={`relative ${className}`}>
       <div className="relative">
         <input
           ref={inputRef}

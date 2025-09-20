@@ -95,7 +95,7 @@ const WishlistSavedItems = () => {
       <SEO title="Wishlist | FreshCart" description="View and manage your saved items and wishlists." />
       <Header />
 
-      <main className="max-w-7xl  px-6 sm:px-20 py-6 flex-grow">
+      <main className=" px-6 sm:px-20 py-6 flex-grow">
         <Breadcrumb customItems={breadcrumbItems} />
 
         <div className="mt-6">

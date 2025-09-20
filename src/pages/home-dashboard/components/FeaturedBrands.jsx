@@ -86,7 +86,7 @@ const FeaturedBrands = () => {
   };
 
   const handleBrandClick = (brandName) => {
-    navigate(`/search-results?brand=${encodeURIComponent(brandName)}`);
+    navigate(`/product-categories-browse?brand=${encodeURIComponent(brandName)}`);
   };
 
   return (

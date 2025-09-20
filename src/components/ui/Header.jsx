@@ -16,6 +16,8 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const searchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
+  const searchButtonRef = useRef(null);
   const userDropdownRef = useRef(null);
   const homeDropdownRef = useRef(null);
 
@@ -52,18 +54,26 @@ const Header = () => {
       action: () => {
         logout();
         setIsUserDropdownOpen(false);
+        navigate('/login');
       }
     },
   ];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
+      // Handle mobile search toggle - check if click is outside both search container and search button
+      if (isSearchExpanded && 
+          mobileSearchRef.current && 
+          !mobileSearchRef.current.contains(event.target) &&
+          searchButtonRef.current &&
+          !searchButtonRef.current.contains(event.target)) {
         setIsSearchExpanded(false);
       }
+      // Handle user dropdown
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
         setIsUserDropdownOpen(false);
       }
+      // Handle home dropdown
       if (homeDropdownRef.current && !homeDropdownRef.current.contains(event.target)) {
         setIsHomeDropdownOpen(false);
       }
@@ -71,7 +81,7 @@ const Header = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isSearchExpanded]);
 
   // SearchWithAutocomplete handles submission and dropdown; keep state for mobile toggle only
 
@@ -167,6 +177,7 @@ const Header = () => {
 
             {/* Mobile Search Toggle */}
             <button
+              ref={searchButtonRef}
               onClick={() => setIsSearchExpanded(!isSearchExpanded)}
               className="lg:hidden p-2 text-text-primary hover:text-primary transition-smooth"
             >
@@ -249,7 +260,7 @@ const Header = () => {
 
         {/* Mobile Search Bar */}
         {isSearchExpanded && (
-          <div className="lg:hidden pb-4" ref={searchRef}>
+          <div className="lg:hidden pb-4" ref={mobileSearchRef}>
             <SearchWithAutocomplete className="w-full" />
           </div>
         )}

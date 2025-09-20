@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import HeroSlider from './components/HeroSlider';
@@ -8,8 +8,75 @@ import PopularProducts from './components/PopularProducts';
 import RecentlyPurchased from './components/RecentlyPurchased';
 import Footer from '../../components/ui/Footer';
 import SEO from '../../components/SEO';
+import Icon from '../../components/AppIcon';
+import { useAuth } from '../../contexts/AuthContext';
+import emailhook from '../../hooks/emailhook';
 
 const HomeStyle1 = () => {
+  const { toast } = useAuth();
+  const { toasts, removeToast } = toast;
+
+  // Newsletter state
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  // Email validation
+  const validateEmail = (email) => {
+    if (!email.trim()) {
+      return 'Email is required';
+    }
+    if (!emailhook.validateEmailStrict(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  // Newsletter subscription
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setEmailError('');
+  };
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+
+    // Validate email
+    const error = validateEmail(email);
+    if (error) {
+      setEmailError(error);
+      return;
+    }
+
+    setIsSubscribing(true);
+
+    try {
+      // Check if email already exists in localStorage
+      const subscribedEmails = JSON.parse(localStorage.getItem('newsletterEmails') || '[]');
+
+      if (subscribedEmails.includes(email.toLowerCase())) {
+        toast.error('This email is already subscribed to our newsletter!');
+        return;
+      }
+
+      // Add email to localStorage
+      subscribedEmails.push(email.toLowerCase());
+      localStorage.setItem('newsletterEmails', JSON.stringify(subscribedEmails));
+
+      // Show success message
+      toast.success('Successfully subscribed to our newsletter!');
+
+      // Clear email field
+      setEmail('');
+
+    } catch (error) {
+      console.error('Error subscribing to newsletter:', error);
+      toast.error('Failed to subscribe. Please try again.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,16 +148,35 @@ const HomeStyle1 = () => {
             <p className="font-body mb-6 opacity-90 text-lg">
               Get exclusive offers, seasonal recipes, and fresh product updates delivered to your inbox
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-3 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="w-full sm:flex-1 px-4 py-3 rounded-lg text-text-primary font-body focus:outline-none focus:ring-2 focus:ring-white shadow-sm"
-              />
-              <button className="w-full sm:w-auto bg-white text-primary font-body font-medium px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow-md">
-                Subscribe Now
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-3 max-w-md mx-auto">
+              <div className="w-full sm:flex-1">
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className={`w-full px-4 py-3 rounded-lg text-text-primary font-body focus:outline-none focus:ring-2 focus:ring-white shadow-sm ${emailError ? 'border-2 border-red-400' : ''}`}
+                  disabled={isSubscribing}
+                />
+                {emailError && (
+                  <p className="text-red-300 text-sm mt-2 text-left">{emailError}</p>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={isSubscribing}
+                className="w-full sm:w-auto bg-white text-primary font-body font-medium px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isSubscribing ? (
+                  <>
+                    <Icon name="Loader2" size={16} className="animate-spin mr-2" />
+                    Subscribing...
+                  </>
+                ) : (
+                  'Subscribe Now'
+                )}
               </button>
-            </div>
+            </form>
           </div>
         </section>
       </main>

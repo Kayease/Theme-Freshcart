@@ -12,7 +12,7 @@ const HomeStyleSelector = ({ currentStyle, onStyleChange }) => {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-20 left-2 z-50">
       <div className={`mb-4 transition-all duration-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
         <div className="bg-white rounded-lg shadow-xl border p-4 w-64">
           <h3 className="font-heading font-bold text-sm mb-3 text-text-primary">Choose Home Style</h3>
@@ -24,11 +24,10 @@ const HomeStyleSelector = ({ currentStyle, onStyleChange }) => {
                   onStyleChange(style.id);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left p-3 rounded-lg transition-all ${
-                  currentStyle === style.id 
-                    ? 'bg-primary text-white' 
+                className={`w-full text-left p-3 rounded-lg transition-all ${currentStyle === style.id
+                    ? 'bg-primary text-white'
                     : 'bg-gray-50 hover:bg-gray-100 text-text-primary'
-                }`}
+                  }`}
               >
                 <div className="flex items-center">
                   <span className="text-lg mr-3">{style.preview}</span>
@@ -44,7 +43,7 @@ const HomeStyleSelector = ({ currentStyle, onStyleChange }) => {
           </div>
         </div>
       </div>
-      
+
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="bg-primary hover:bg-primary/90 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"

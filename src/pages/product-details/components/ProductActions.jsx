@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import QuantitySelector from './QuantitySelector';
+import ShareModal from './ShareModal';
 import { useAuth } from '../../../contexts/AuthContext';
 
 const ProductActions = ({ product }) => {
-  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useAuth();
+  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, toast } = useAuth();
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0] || null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Check if product is in wishlist
   const productInWishlist = isInWishlist(product.id);
@@ -72,6 +74,48 @@ const ProductActions = ({ product }) => {
 
   const isOutOfStock = product.availability?.toLowerCase() === 'out of stock';
   const totalPrice = (product.price.current * selectedQuantity).toFixed(2);
+
+  // Share function that opens the share modal
+  const handleShare = () => {
+    setShowShareModal(true);
+  };
+
+  // Quick copy function for immediate sharing
+  const handleQuickCopy = async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('Product link copied to clipboard!');
+        return;
+      }
+    } catch (error) {
+      console.log('Clipboard API failed:', error);
+    }
+
+    // Fallback method that works on all domains
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.href;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        toast.success('Product link copied to clipboard!');
+      } else {
+        toast.error('Failed to copy link. Please try the share modal.');
+      }
+    } catch (error) {
+      console.error('Copy failed:', error);
+      toast.error('Failed to copy link. Please try the share modal.');
+    }
+  };
 
   return (
     <div className="space-y-6 border-t border-border pt-6">
@@ -172,24 +216,26 @@ const ProductActions = ({ product }) => {
             {productInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
           </Button>
 
-          <Button
-            variant="ghost"
-            size="lg"
-            iconName="Share2"
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: product.name,
-                  text: `Check out this ${product.name} on FreshCart`,
-                  url: window.location.href
-                });
-              } else {
-                navigator.clipboard.writeText(window.location.href);
-              }
-            }}
-          >
-            Share
-          </Button>
+          <div className="flex space-x-2">
+            <Button
+              variant="ghost"
+              size="lg"
+              iconName="Copy"
+              onClick={handleQuickCopy}
+              title="Copy link to clipboard"
+            >
+              Copy
+            </Button>
+            <Button
+              variant="ghost"
+              size="lg"
+              iconName="Share2"
+              onClick={handleShare}
+              title="Share on social media"
+            >
+              Share
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -214,6 +260,14 @@ const ProductActions = ({ product }) => {
           </span>
         </div>
       </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        product={product}
+        url={window.location.href}
+      />
     </div>
   );
 };

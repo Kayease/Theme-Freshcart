@@ -56,17 +56,6 @@ const HeroSlider = () => {
     setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
-  };
 
   return (
     <div className="relative w-full h-64 md:h-80 lg:h-96 overflow-hidden rounded-lg shadow-card">
@@ -75,11 +64,10 @@ const HeroSlider = () => {
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-500 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-500 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
           >
-            <div className={`${slide.bgColor} w-full h-full relative`}>
+            <div className={`${slide.bgColor} w-full h-full relative `}>
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               <div className="relative z-10 flex items-center h-full px-6 md:px-12">
                 <div className="flex-1 text-white">
@@ -116,15 +104,14 @@ const HeroSlider = () => {
       </div>
 
       {/* Dots Indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-200 ${
-              index === currentSlide
-                ? 'bg-white' :'bg-white bg-opacity-50 hover:bg-opacity-75'
-            }`}
+            className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentSlide
+                ? 'bg-white' : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+              }`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
@@ -137,10 +124,10 @@ const HeroSlider = () => {
           className="w-8 h-8 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full flex items-center justify-center transition-all duration-200"
           aria-label={isAutoPlaying ? 'Pause slideshow' : 'Play slideshow'}
         >
-          <Icon 
-            name={isAutoPlaying ? "Pause" : "Play"} 
-            size={14} 
-            className="text-gray-800" 
+          <Icon
+            name={isAutoPlaying ? "Pause" : "Play"}
+            size={14}
+            className="text-gray-800"
           />
         </button>
       </div>

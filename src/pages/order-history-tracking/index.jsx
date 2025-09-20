@@ -367,7 +367,7 @@ const OrderHistoryTracking = () => {
               iconName="Plus"
               iconPosition="left"
             >
-              New Order
+             New <span className='hidden sm:block'>&nbsp;Order</span>
             </Button>
           </div>
         </div>
