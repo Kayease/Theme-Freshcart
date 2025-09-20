@@ -16,19 +16,22 @@ const externalShowcases = [
 ];
 
 const featureHighlights = [
-    { icon: 'Zap', title: 'Fast by Default', desc: 'Vite-powered development & granular code splitting for optimal performance.' },
-    { icon: 'Smartphone', title: 'Mobile First', desc: 'Adaptive layouts, touch-friendly components & installable PWA.' },
-    { icon: 'Moon', title: 'Dark Mode Ready', desc: 'Semantic design tokens + class based theme switching.' },
-    { icon: 'Languages', title: 'Multi-Language', desc: 'i18n pipeline prepared for locale expansion & future RTL.' },
-    { icon: 'ShieldCheck', title: 'Accessible', desc: 'Color contrast aware palette & structured component semantics.' },
-    { icon: 'Image', title: 'Smart Images', desc: 'Lazy loaded, responsive, WebP fallbacks & LQIP placeholders.' },
+    { icon: 'ShoppingCart', title: 'Complete E-commerce', desc: 'Full shopping cart, wishlist, order tracking, and checkout system with promo codes.' },
+    { icon: 'Zap', title: 'High Performance', desc: 'Vite-powered development, code splitting, and optimized images for 95+ Lighthouse score.' },
+    { icon: 'Smartphone', title: 'Mobile First', desc: 'Responsive design, PWA support, and touch-friendly components for all devices.' },
+    { icon: 'Search', title: 'Advanced Search', desc: 'Real-time search, voice search, barcode scanning, and intelligent filtering.' },
+    { icon: 'Users', title: 'User Management', desc: 'Authentication, profile management, address book, and payment methods.' },
+    { icon: 'Package', title: 'Order Management', desc: 'Order tracking, history, PDF invoices, and reordering functionality.' },
 ];
 
 const stats = [
-    { label: 'Core Pages', value: '25+' },
-    { label: 'Home Variants', value: '4' },
-    { label: 'Locales', value: '3' },
-    { label: 'Performance Focus', value: '100%' },
+    { label: 'Pages & Components', value: '25+' },
+    { label: 'Homepage Styles', value: '4' },
+    { label: 'Product Categories', value: '8' },
+    { label: 'Pre-loaded Products', value: '13+' },
+    { label: 'UI Components', value: '50+' },
+    { label: 'Performance Score', value: '95+' },
+    { label: 'Features', value: '100+' },
 ];
 
 // Icon-based creative representation for each home variant (replaces preview images for a cleaner look)
@@ -85,15 +88,15 @@ const HomeLanding = () => {
                 <div className="relative max-w-4xl mx-auto px-6 text-center mt-4">
                     <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-xs font-data tracking-wide uppercase">React + Tailwind Premium Theme</div>
                     <h1 className="text-4xl md:text-5xl font-heading font-heading-bold tracking-tight mb-6 leading-tight">
-                        Build a <span className="text-primary">Premium E‑commerce</span><br className="hidden sm:block" /> Experience Faster
+                        Complete <span className="text-primary">E-commerce Solution</span><br className="hidden sm:block" /> Ready to Launch
                     </h1>
-                    <p className="text-lg md:text-xl text-text-secondary font-body leading-relaxed max-w-2xl mx-auto mb-8">FreshCart is a production‑ready React theme focused on performance, accessibility, and extensibility—crafted for ThemeForest standards.</p>
+                    <p className="text-lg md:text-xl text-text-secondary font-body leading-relaxed max-w-2xl mx-auto mb-8">FreshCart is a comprehensive React e-commerce theme with 25+ pages, 4 homepage styles, complete shopping functionality, user management, and advanced features—perfect for grocery stores, marketplaces, and retail businesses.</p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link to="/documentation" className="px-8 py-4 rounded-button bg-primary text-primary-foreground font-body font-body-medium text-sm shadow-card hover:bg-primary/90 transition-smooth">View Documentation</Link>
                         <Link to="/home-dashboard" target='_blank' className="px-8 py-4 rounded-button bg-surface border border-border text-text-primary font-body text-sm hover:shadow-card hover:border-primary transition-smooth">Explore Demo Dashboard</Link>
                     </div>
                     <div className="mt-10 flex flex-wrap items-center justify-center gap-6 opacity-80 text-xs font-data">
-                        {['Dark Mode', 'PWA', 'i18n', 'Lazy Loading', 'Responsive', 'Accessible'].map(tag => (
+                        {['Complete E-commerce', 'User Authentication', 'Order Management', 'Advanced Search', 'PWA Support', 'Mobile First', 'Dark Mode', 'Multi-language'].map(tag => (
                             <span key={tag} className="px-3 py-1 bg-border-light rounded-full">{tag}</span>
                         ))}
                     </div>
@@ -104,8 +107,8 @@ const HomeLanding = () => {
                 <section className="py-16 border-t border-border-light bg-surface/50">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="text-center mb-12">
-                            <h2 className="text-2xl md:text-3xl font-heading font-heading-bold mb-3">Built for Scale & Quality</h2>
-                            <p className="text-text-secondary font-body max-w-2xl mx-auto">A refined architecture and experience layer to accelerate marketplace-grade e‑commerce builds.</p>
+                            <h2 className="text-2xl md:text-3xl font-heading font-heading-bold mb-3">Complete E-commerce Features</h2>
+                            <p className="text-text-secondary font-body max-w-2xl mx-auto">Everything you need to launch a professional online store with advanced shopping features, user management, and modern design.</p>
                         </div>
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {featureHighlights.map(f => (
@@ -165,13 +168,120 @@ const HomeLanding = () => {
                 {/* Stats Band */}
                 <section className="py-12 bg-gradient-to-r from-primary/90 to-secondary text-primary-foreground">
                     <div className="max-w-7xl mx-auto px-6">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10 text-center">
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-8 md:gap-10 text-center">
                             {stats.map(s => (
                                 <div key={s.label} className="space-y-1">
                                     <div className="text-3xl font-heading font-heading-bold tracking-tight drop-shadow-sm">{s.value}</div>
                                     <div className="text-xs font-data uppercase tracking-wide opacity-90">{s.label}</div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Comprehensive Features Section */}
+                <section className="py-20 bg-background">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-4xl font-heading font-heading-bold mb-4">Everything You Need to Launch</h2>
+                            <p className="text-lg text-text-secondary font-body max-w-3xl mx-auto">FreshCart includes all the essential features and pages for a complete e-commerce experience, from product browsing to order fulfillment.</p>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {/* Shopping Features */}
+                            <div className="bg-surface border border-border rounded-card p-6 shadow-card">
+                                <div className="w-12 h-12 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-4">
+                                    <Icon name="ShoppingCart" size={24} />
+                                </div>
+                                <h3 className="text-xl font-heading font-heading-bold mb-3">Shopping Experience</h3>
+                                <ul className="space-y-2 text-sm text-text-secondary">
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Product catalog with 13+ items</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Advanced search & filtering</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Shopping cart with promo codes</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Wishlist management</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Product reviews & ratings</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Related products suggestions</li>
+                                </ul>
+                            </div>
+
+                            {/* User Management */}
+                            <div className="bg-surface border border-border rounded-card p-6 shadow-card">
+                                <div className="w-12 h-12 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-4">
+                                    <Icon name="Users" size={24} />
+                                </div>
+                                <h3 className="text-xl font-heading font-heading-bold mb-3">User Management</h3>
+                                <ul className="space-y-2 text-sm text-text-secondary">
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />User registration & authentication</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Profile management with avatar</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Address book management</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Payment methods storage</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Password recovery system</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Account security settings</li>
+                                </ul>
+                            </div>
+
+                            {/* Order Management */}
+                            <div className="bg-surface border border-border rounded-card p-6 shadow-card">
+                                <div className="w-12 h-12 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-4">
+                                    <Icon name="Package" size={24} />
+                                </div>
+                                <h3 className="text-xl font-heading font-heading-bold mb-3">Order Management</h3>
+                                <ul className="space-y-2 text-sm text-text-secondary">
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Multi-step checkout process</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Order tracking & history</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />PDF invoice generation</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Order reordering</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Delivery time slots</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Order status updates</li>
+                                </ul>
+                            </div>
+
+                            {/* Advanced Features */}
+                            <div className="bg-surface border border-border rounded-card p-6 shadow-card">
+                                <div className="w-12 h-12 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-4">
+                                    <Icon name="Search" size={24} />
+                                </div>
+                                <h3 className="text-xl font-heading font-heading-bold mb-3">Advanced Features</h3>
+                                <ul className="space-y-2 text-sm text-text-secondary">
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Real-time search suggestions</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Voice search capability</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Barcode scanning</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Smart filtering system</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Recent searches history</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Search result highlighting</li>
+                                </ul>
+                            </div>
+
+                            {/* Design & UX */}
+                            <div className="bg-surface border border-border rounded-card p-6 shadow-card">
+                                <div className="w-12 h-12 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-4">
+                                    <Icon name="Palette" size={24} />
+                                </div>
+                                <h3 className="text-xl font-heading font-heading-bold mb-3">Design & UX</h3>
+                                <ul className="space-y-2 text-sm text-text-secondary">
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />4 unique homepage styles</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Dark/Light mode toggle</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Mobile-first responsive design</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Smooth animations & transitions</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Modern UI component library</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Accessibility compliance</li>
+                                </ul>
+                            </div>
+
+                            {/* Technical Features */}
+                            <div className="bg-surface border border-border rounded-card p-6 shadow-card">
+                                <div className="w-12 h-12 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-4">
+                                    <Icon name="Code" size={24} />
+                                </div>
+                                <h3 className="text-xl font-heading font-heading-bold mb-3">Technical Features</h3>
+                                <ul className="space-y-2 text-sm text-text-secondary">
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />React 18 with modern hooks</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Tailwind CSS design system</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />PWA with offline support</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />SEO optimized components</li>
+                                    <li className="flex items-center"><Icon name="Check" size={16} className="text-primary mr-2" />Performance optimized (95+ score)</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -206,8 +316,8 @@ const HomeLanding = () => {
                 <section className="py-20">
                     <div className="max-w-5xl mx-auto px-6 text-center">
                         <div className="relative overflow-hidden rounded-2xl border border-border shadow-card bg-gradient-to-br from-surface via-surface to-primary/5 p-10 md:p-14">
-                            <h2 className="text-3xl md:text-4xl font-heading font-heading-bold mb-6 tracking-tight">Launch Your Next Store Faster</h2>
-                            <p className="text-text-secondary font-body max-w-2xl mx-auto mb-8">Use FreshCart as a strong baseline and extend with marketplace, subscription, or multi‑vendor features—without starting from scratch.</p>
+                            <h2 className="text-3xl md:text-4xl font-heading font-heading-bold mb-6 tracking-tight">Ready to Launch Your Store?</h2>
+                            <p className="text-text-secondary font-body max-w-2xl mx-auto mb-8">FreshCart provides everything you need to start selling online immediately. Complete e-commerce functionality, modern design, and professional features—all ready to customize and deploy.</p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Link to="/documentation" className="px-8 py-4 rounded-button bg-primary text-primary-foreground font-body font-body-medium text-sm shadow-card hover:bg-primary/90 transition-smooth">Read the Docs</Link>
                                 <Link to="/home-dashboard" target="_blank" className="px-8 py-4 rounded-button bg-surface border border-border text-text-primary font-body text-sm hover:shadow-card hover:border-primary transition-smooth">View Dashboard Demo</Link>
